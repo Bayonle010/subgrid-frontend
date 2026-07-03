@@ -1,39 +1,6 @@
 "use client";
 import { Container, Text } from "@subgrid/ui";
-import { CheckIcon, WalletIcon, ScrollIcon, UserIcon, AddIcon } from "@subgrid/ui/icons";
-
-const MetricCard = ({
-  label,
-  value,
-  change,
-  positive = true,
-}: {
-  label: string;
-  value: string;
-  change: string;
-  positive?: boolean;
-}) => (
-  <Container className="bg-white/8 border border-white/12 rounded-2xl p-4">
-    <Text variant="bodyXSmall" className="text-white/60 uppercase tracking-widest">
-      {label}
-    </Text>
-    <Text variant="h3" className="text-inverted mt-1">
-      {value}
-    </Text>
-    <Container className="flex items-center gap-1 mt-1">
-      <Container
-        className={`w-4 h-4 rounded-full flex items-center justify-center ${
-          positive ? "bg-brand-tertiary-bg-bold" : "bg-danger-bg-bold"
-        }`}
-      >
-        <span className="text-[8px] font-bold text-[#080A58]">{positive ? "↑" : "↓"}</span>
-      </Container>
-      <Text variant="bodyXSmall" className={positive ? "text-brand-tertiary-text-icons" : "text-danger-text-icons"}>
-        {change}
-      </Text>
-    </Container>
-  </Container>
-);
+import { CheckIcon, WalletIcon } from "@subgrid/ui/icons";
 
 const Feature = ({ text }: { text: string }) => (
   <Container className="flex items-center gap-3">
@@ -81,46 +48,6 @@ export const AuthImage = () => {
           </Text>
         </Container>
 
-        <Container className="grid grid-cols-2 gap-3">
-          <MetricCard label="Monthly Recurring Revenue" value="₦4.23M" change="+12.4% vs last month" />
-          <MetricCard label="Active Subscribers" value="1,247" change="+8.2% vs last month" />
-        </Container>
-
-        <Container className="bg-white/6 border border-white/10 rounded-2xl p-4">
-          <Container className="flex items-center justify-between mb-3">
-            <Text variant="bodyXSmall" className="text-white/50 uppercase tracking-widest">
-              Recent activity
-            </Text>
-            <Container className="px-2 py-0.5 rounded-full bg-brand-tertiary-bg-bold">
-              <Text variant="bodyXSmall" className="text-[#080A58] font-semibold">
-                Live
-              </Text>
-            </Container>
-          </Container>
-          {[
-            { name: "Paystack Clone Co.", plan: "Growth", amount: "₦25,000" },
-            { name: "Lendsqr Finance", plan: "Enterprise", amount: "₦120,000" },
-            { name: "Cowrywise App", plan: "Starter", amount: "₦5,000" },
-          ].map((row) => (
-            <Container
-              key={row.name}
-              className="flex items-center justify-between py-2 border-b border-white/8 last:border-0"
-            >
-              <Container>
-                <Text variant="bodyXSmall" className="text-inverted">
-                  {row.name}
-                </Text>
-                <Text variant="bodyXSmall" className="text-white/45">
-                  {row.plan}
-                </Text>
-              </Container>
-              <Text variant="bodyXSmall" className="text-brand-tertiary-text-icons font-semibold">
-                {row.amount}
-              </Text>
-            </Container>
-          ))}
-        </Container>
-
         <Container className="flex flex-col gap-3">
           <Feature text="One-line Nomba payment integration" />
           <Feature text="Unlimited plan tiers and billing cycles" />
@@ -130,7 +57,7 @@ export const AuthImage = () => {
 
       <Container className="relative z-10">
         <Text variant="bodyXSmall" className="text-white/35">
-          Trusted by 500+ products across Africa
+          Trusted by products across Africa
         </Text>
       </Container>
     </Container>

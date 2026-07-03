@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { listApiKeys, createApiKey, revokeApiKey } from "../services/api-key.service";
-import { CreateApiKeyPayload } from "../types/api-key.type";
+import { ApiKey, CreateApiKeyPayload, CreateApiKeyResponse } from "../types/api-key.type";
 import { useToast } from "@/shared/toast";
 
 export const API_KEYS_QUERY_KEY = ["api-keys"];
@@ -8,24 +8,31 @@ export const API_KEYS_QUERY_KEY = ["api-keys"];
 export const useListApiKeys = () => {
   return useQuery({
     queryKey: API_KEYS_QUERY_KEY,
-    queryFn: listApiKeys,
+    queryFn: async (): Promise<ApiKey[]> => {
+      const res = await listApiKeys();
+      return res.data;
+    },
+    staleTime: 5 * 60 * 1000,
   });
 };
 
 export const useCreateApiKey = (
-  sc: (val: any) => void,
+  sc: (data: ApiKey, secretKey: string) => void,
   ec?: (err: any) => void,
 ) => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+
   return useMutation({
-    mutationFn: (payload: CreateApiKeyPayload) => createApiKey(payload),
-    onSuccess: (data) => {
+    mutationFn: (payload: CreateApiKeyPayload): Promise<CreateApiKeyResponse> =>
+      createApiKey(payload),
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: API_KEYS_QUERY_KEY });
-      sc(data);
+      sc(res.data, res.data.secretKey ?? "");
     },
     onError: (e: any) => {
-      const message = e?.response?.data?.detail ?? "Failed to create API key.";
+      const message =
+        e?.response?.data?.message ?? "Failed to create API key. Please try again.";
       addToast({ variant: "error", title: "Error", description: message });
       ec?.(e);
     },
@@ -38,8 +45,9 @@ export const useRevokeApiKey = (
 ) => {
   const queryClient = useQueryClient();
   const { addToast } = useToast();
+
   return useMutation({
-    mutationFn: revokeApiKey,
+    mutationFn: (id: string) => revokeApiKey(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: API_KEYS_QUERY_KEY });
       addToast({
@@ -50,7 +58,8 @@ export const useRevokeApiKey = (
       sc();
     },
     onError: (e: any) => {
-      const message = e?.response?.data?.detail ?? "Failed to revoke key.";
+      const message =
+        e?.response?.data?.message ?? "Failed to revoke key. Please try again.";
       addToast({ variant: "error", title: "Error", description: message });
       ec?.(e);
     },

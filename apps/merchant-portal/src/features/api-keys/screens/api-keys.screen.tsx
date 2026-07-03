@@ -1,145 +1,140 @@
 "use client";
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Button,
   Checkbox,
   Container,
   Input,
-  Radio,
-  Select,
   Text,
 } from "@subgrid/ui";
 import {
   AddIcon,
   CopyIcon,
   DangerIcon,
-  SuccessIcon,
   WarningIcon,
   LegalIcon,
   EyeOnIcon,
   CloseIcon,
   CheckIcon,
-  BackIcon,
 } from "@subgrid/ui/icons";
 import { useApiKeysScreen } from "../hooks/useApiKeys";
-import { ApiKey } from "../types/api-key.type";
+import { ApiKey, ApiKeyMode } from "../types/api-key.type";
+import { EmptyState } from "@/shared/ui/empty-state";
 
-const ENV_BADGE: Record<"live" | "test", { label: string; className: string }> = {
-  live: { label: "Live", className: "bg-success-bg-light text-success-text-icons border-success-border" },
-  test: { label: "Test", className: "bg-warning-bg-light text-warning-text-icons border-warning-border" },
+const MODE_BADGE: Record<ApiKeyMode, { label: string; className: string }> = {
+  LIVE: { label: "Live", className: "bg-success-bg-light text-success-text-icons border-success-border" },
+  TEST: { label: "Test", className: "bg-warning-bg-light text-warning-text-icons border-warning-border" },
 };
 
-const SCOPE_LABELS: Record<string, string> = {
-  full_access: "Full access",
-  read_only: "Read only",
-  webhooks_only: "Webhooks only",
+// ── Modal shell ──────────────────────────────────────────────────────────────
+const Modal = ({ onClose, children }: { onClose: () => void; children: React.ReactNode }) => {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <Container className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <Container
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <Container className="relative w-full max-w-lg bg-surface border border-border rounded-2xl shadow-xl overflow-hidden">
+        {children}
+      </Container>
+    </Container>,
+    document.body,
+  );
 };
 
-const MOCK_KEYS: ApiKey[] = [
-  {
-    id: "key_01",
-    name: "Production server",
-    prefix: "sf_live_sk_xk9m3...nQP2",
-    environment: "live",
-    scope: "full_access",
-    created_at: "Jun 10, 2026",
-    last_used_at: "Jun 27, 2026",
-    is_active: true,
-  },
-  {
-    id: "key_02",
-    name: "Mobile app",
-    prefix: "sf_live_sk_pR7z1...mW8X",
-    environment: "live",
-    scope: "read_only",
-    created_at: "May 22, 2026",
-    last_used_at: "Jun 25, 2026",
-    is_active: true,
-  },
-  {
-    id: "key_03",
-    name: "Staging environment",
-    prefix: "sf_test_sk_aB4d2...kL5N",
-    environment: "test",
-    scope: "full_access",
-    created_at: "May 5, 2026",
-    last_used_at: null,
-    is_active: true,
-  },
-  {
-    id: "key_04",
-    name: "Old webhook handler",
-    prefix: "sf_live_sk_qT9w6...rJ3H",
-    environment: "live",
-    scope: "webhooks_only",
-    created_at: "Mar 1, 2026",
-    last_used_at: "Mar 28, 2026",
-    is_active: false,
-  },
-];
-
-const KeyRow = ({
-  apiKey,
-  onRevoke,
+// ── Mode option card ──────────────────────────────────────────────────────────
+const ModeCard = ({
+  value,
+  selected,
+  onSelect,
 }: {
-  apiKey: ApiKey;
-  onRevoke: (id: string) => void;
-}) => {
-  const env = ENV_BADGE[apiKey.environment];
+  value: ApiKeyMode;
+  selected: boolean;
+  onSelect: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onSelect}
+    className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+      selected
+        ? "border-[var(--brand-border)] bg-[var(--brand-bg-light)]"
+        : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--muted)]"
+    }`}
+  >
+    <Container
+      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+        selected
+          ? "border-[var(--brand-text-icons)] bg-[var(--brand-text-icons)]"
+          : "border-[var(--tertiary)]"
+      }`}
+    >
+      {selected && <Container className="w-1.5 h-1.5 rounded-full bg-white" />}
+    </Container>
+    <Container>
+      <Text variant="bodySmall" className={`font-medium ${selected ? "text-brand-text-icons" : "text-primary"}`}>
+        {value === "LIVE" ? "Live" : "Test"}
+      </Text>
+      <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+        {value === "LIVE"
+          ? "Real transactions. Charges actual payment methods."
+          : "Sandbox mode. No real charges are made."}
+      </Text>
+    </Container>
+  </button>
+);
+
+// ── Key row ───────────────────────────────────────────────────────────────────
+const KeyRow = ({ apiKey, onRevoke }: { apiKey: ApiKey; onRevoke: (id: string) => void }) => {
+  const badge = MODE_BADGE[apiKey.mode];
+  const isActive = apiKey.status === "ACTIVE";
+
   return (
-    <Container className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 border-b border-border last:border-0">
+    <Container className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 border-b border-border last:border-0 hover:bg-muted/40 transition-colors">
       <Container className="flex items-start sm:items-center gap-4">
-        <Container
-          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-            apiKey.is_active ? "bg-brand-bg-light" : "bg-muted"
-          }`}
-        >
-          <LegalIcon
-            size={16}
-            className={apiKey.is_active ? "text-brand-text-icons" : "text-secondary"}
-          />
+        <Container className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isActive ? "bg-brand-bg-light" : "bg-muted"}`}>
+          <LegalIcon size={16} className={isActive ? "text-brand-text-icons" : "text-secondary"} />
         </Container>
         <Container>
           <Container className="flex items-center gap-2 flex-wrap">
-            <Text variant="bodySmall" className="text-primary font-medium">
-              {apiKey.name}
-            </Text>
-            <Container
-              className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-medium ${env.className}`}
-            >
-              {env.label}
+            <Text variant="bodySmall" className="text-primary font-medium">{apiKey.name}</Text>
+            <Container className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-medium ${badge.className}`}>
+              {badge.label}
             </Container>
-            <Container className="inline-flex items-center px-2 py-0.5 rounded-full border border-border bg-muted text-[11px] text-secondary">
-              {SCOPE_LABELS[apiKey.scope]}
-            </Container>
-            {!apiKey.is_active && (
+            {!isActive && (
               <Container className="inline-flex items-center px-2 py-0.5 rounded-full border border-danger-border bg-danger-bg-light text-[11px] text-danger-text-icons">
                 Revoked
               </Container>
             )}
           </Container>
-          <Container className="flex items-center gap-1 mt-1">
-            <Text variant="bodyXSmall" className="text-secondary font-mono">
-              {apiKey.prefix}
-            </Text>
-          </Container>
-          <Container className="flex items-center gap-3 mt-1">
+          <Text variant="bodyXSmall" className="text-secondary font-mono mt-0.5">
+            {apiKey.secretPreview}
+          </Text>
+          <Container className="flex items-center gap-2 mt-1">
             <Text variant="bodyXSmall" className="text-secondary">
-              Created {apiKey.created_at}
+              Created {new Date(apiKey.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </Text>
-            <Text variant="bodyXSmall" className="text-secondary">·</Text>
+            <span className="text-secondary text-xs">·</span>
             <Text variant="bodyXSmall" className="text-secondary">
-              {apiKey.last_used_at ? `Last used ${apiKey.last_used_at}` : "Never used"}
+              {apiKey.lastUsedAt
+                ? `Last used ${new Date(apiKey.lastUsedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                : "Never used"}
             </Text>
           </Container>
         </Container>
       </Container>
-
-      {apiKey.is_active && (
-        <Button
-          variant="danger"
-          size="small"
-          onClick={() => onRevoke(apiKey.id)}
-        >
+      {isActive && (
+        <Button variant="danger" size="small" onClick={() => onRevoke(apiKey.id)}>
           Revoke
         </Button>
       )}
@@ -147,14 +142,15 @@ const KeyRow = ({
   );
 };
 
+// ── Main screen ───────────────────────────────────────────────────────────────
 export const ApiKeysScreen = () => {
   const {
     flowState,
+    apiKeys,
+    isLoading,
     name,
-    environment,
-    setEnvironment,
-    scope,
-    setScope,
+    mode,
+    setMode,
     errors,
     isCreating,
     revealedSecret,
@@ -173,27 +169,23 @@ export const ApiKeysScreen = () => {
     handleRevokeConfirm,
   } = useApiKeysScreen();
 
+  const revokeTarget = apiKeys.find((k) => k.id === revokeTargetId);
+
   return (
-    <Container className="max-w-[1400px] mx-auto px-6 py-8 flex flex-col gap-8">
+    <Container className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8">
+
+      {/* ── Header ────────────────────────────────────────── */}
       <Container className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <Container>
-          <Text variant="h4" className="text-primary">
-            API Keys
-          </Text>
+          <Text variant="h4" className="text-primary">API Keys</Text>
           <Text variant="bodySmall" className="text-secondary mt-0.5 max-w-lg">
-            Authenticate your server-side requests to the SubGrid API. Keep
-            your secret keys private — never expose them in client-side code.
+            Authenticate your server-side requests to the SubGrid API. Keep your
+            secret keys private — never expose them in client-side code.
           </Text>
         </Container>
-        {flowState === "list" && (
-          <Button
-            variant="primary"
-            leftIcon={<AddIcon size={16} />}
-            onClick={handleStartCreate}
-          >
-            Create new key
-          </Button>
-        )}
+        <Button variant="primary" leftIcon={<AddIcon size={16} />} onClick={handleStartCreate}>
+          Create new key
+        </Button>
       </Container>
 
       {/* ── Revealed secret panel ─────────────────────────── */}
@@ -208,43 +200,39 @@ export const ApiKeysScreen = () => {
                 Copy your secret key now — it won&apos;t be shown again.
               </Text>
               <Text variant="bodyXSmall" className="text-secondary mt-0.5">
-                Store it somewhere safe like a password manager or environment
-                variable. You cannot retrieve it after closing this panel.
+                Store it somewhere safe like a password manager or environment variable.
               </Text>
             </Container>
           </Container>
 
           <Container className="px-6 py-5 flex flex-col gap-5">
-            <Container>
-              <Text variant="bodyXSmall" className="text-secondary mb-2">
-                Key name
-              </Text>
-              <Text variant="bodySmall" className="text-primary font-medium">
-                {revealedKey.name}
-              </Text>
+            <Container className="grid grid-cols-2 gap-4">
+              <Container>
+                <Text variant="bodyXSmall" className="text-secondary mb-1">Key name</Text>
+                <Text variant="bodySmall" className="text-primary font-medium">{revealedKey.name}</Text>
+              </Container>
+              <Container>
+                <Text variant="bodyXSmall" className="text-secondary mb-1">Mode</Text>
+                <Container className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-medium ${MODE_BADGE[revealedKey.mode].className}`}>
+                  {MODE_BADGE[revealedKey.mode].label}
+                </Container>
+              </Container>
+              <Container className="col-span-2">
+                <Text variant="bodyXSmall" className="text-secondary mb-1">Client ID</Text>
+                <Text variant="bodyXSmall" className="text-primary font-mono">{revealedKey.clientId}</Text>
+              </Container>
             </Container>
 
             <Container>
-              <Text variant="bodyXSmall" className="text-secondary mb-2">
-                Your secret key
-              </Text>
+              <Text variant="bodyXSmall" className="text-secondary mb-2">Secret key</Text>
               <Container className="flex items-center gap-3 bg-muted border border-border rounded-xl px-4 py-3">
-                <Text
-                  variant="bodyXSmall"
-                  className="text-primary font-mono flex-1 break-all select-all"
-                >
+                <Text variant="bodyXSmall" className="text-primary font-mono flex-1 break-all select-all">
                   {revealedSecret}
                 </Text>
                 <Button
                   variant={hasCopied ? "secondary" : "primary"}
                   size="small"
-                  leftIcon={
-                    hasCopied ? (
-                      <CheckIcon size={14} />
-                    ) : (
-                      <CopyIcon size={14} />
-                    )
-                  }
+                  leftIcon={hasCopied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
                   onClick={handleCopySecret}
                 >
                   {hasCopied ? "Copied!" : "Copy"}
@@ -255,19 +243,14 @@ export const ApiKeysScreen = () => {
             <Container className="flex items-start gap-3 p-4 bg-warning-bg-light border border-warning-border rounded-xl">
               <WarningIcon size={16} className="text-warning-text-icons shrink-0 mt-0.5" />
               <Text variant="bodyXSmall" className="text-secondary">
-                Add this key to your server environment as{" "}
-                <span className="font-mono text-primary bg-muted px-1.5 py-0.5 rounded">
-                  SUBFLOW_SECRET_KEY
-                </span>
-                . Never commit it to version control.
+                Add this to your server as{" "}
+                <span className="font-mono text-primary bg-muted px-1.5 py-0.5 rounded">SUBGRID_SECRET_KEY</span>.
+                Never commit it to version control.
               </Text>
             </Container>
 
             <Container className="flex items-center gap-3 pt-1 border-t border-border">
-              <Checkbox
-                checked={hasCopied}
-                onChange={(val) => setHasCopied(val)}
-              />
+              <Checkbox checked={hasCopied} onChange={(val) => setHasCopied(val)} />
               <Text variant="bodyXSmall" className="text-secondary">
                 I have copied and stored this key securely.
               </Text>
@@ -285,23 +268,62 @@ export const ApiKeysScreen = () => {
         </Container>
       )}
 
-      {/* ── Create form ───────────────────────────────────── */}
+      {/* ── Keys list ─────────────────────────────────────── */}
+      <Container className="bg-surface border border-border rounded-2xl overflow-hidden">
+        <Container className="px-6 py-4 border-b border-border">
+          <Text variant="h5" className="text-primary font-semibold">Your API keys</Text>
+          <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+            {apiKeys.filter((k) => k.status === "ACTIVE").length} active ·{" "}
+            {apiKeys.filter((k) => k.status === "REVOKED").length} revoked
+          </Text>
+        </Container>
+
+        {isLoading ? (
+          <Container className="flex flex-col">
+            {[1, 2, 3].map((i) => (
+              <Container key={i} className="flex items-center gap-4 px-6 py-4 border-b border-border last:border-0 animate-pulse">
+                <Container className="w-9 h-9 rounded-xl bg-muted shrink-0" />
+                <Container className="flex flex-col gap-2 flex-1">
+                  <Container className="h-3 w-40 bg-muted rounded-full" />
+                  <Container className="h-2.5 w-56 bg-muted rounded-full" />
+                </Container>
+              </Container>
+            ))}
+          </Container>
+        ) : apiKeys.length === 0 ? (
+          <EmptyState
+            icon={<LegalIcon size={22} className="text-secondary" />}
+            title="No API keys yet"
+            description="Create your first API key to start authenticating requests to the SubGrid API from your server."
+            action={{ label: "Create new key", onClick: handleStartCreate }}
+          />
+        ) : (
+          apiKeys.map((key) => (
+            <KeyRow key={key.id} apiKey={key} onRevoke={(id) => setRevokeTargetId(id)} />
+          ))
+        )}
+      </Container>
+
+      {/* ── Create modal ──────────────────────────────────── */}
       {flowState === "create" && (
-        <Container className="bg-surface border border-border rounded-2xl overflow-hidden">
-          <Container className="px-6 py-4 border-b border-border flex items-center gap-3">
-            <Container
-              as="button"
-              onClick={handleCancelCreate}
-              className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center cursor-pointer hover:bg-border transition-colors"
-            >
-              <BackIcon size={14} className="text-secondary" />
+        <Modal onClose={handleCancelCreate}>
+          <Container className="px-6 pt-6 pb-2 flex items-start justify-between gap-4 border-b border-border">
+            <Container>
+              <Text variant="h5" className="text-primary font-semibold">Create a new API key</Text>
+              <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+                Choose a mode and give your key a name.
+              </Text>
             </Container>
-            <Text variant="h5" className="text-primary font-semibold">
-              Create a new API key
-            </Text>
+            <button
+              type="button"
+              onClick={handleCancelCreate}
+              className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-border transition-colors shrink-0 mt-0.5"
+            >
+              <CloseIcon size={14} className="text-secondary" />
+            </button>
           </Container>
 
-          <Container className="px-6 py-6 flex flex-col gap-6 max-w-lg">
+          <Container className="px-6 py-5 flex flex-col gap-5">
             <Input
               label="Key name"
               required
@@ -313,212 +335,90 @@ export const ApiKeysScreen = () => {
             />
 
             <Container>
-              <Text variant="bodyXSmall" className="text-primary font-medium mb-3">
-                Environment
-              </Text>
-              <Container className="flex flex-col gap-3">
-                <Container
-                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-colors ${
-                    environment === "live"
-                      ? "border-brand-border bg-brand-bg-light"
-                      : "border-border bg-surface hover:bg-muted"
-                  }`}
-                  as="button"
-                  onClick={() => setEnvironment("live")}
-                >
-                  <Radio
-                    label=""
-                    value="live"
-                    checked={environment === "live"}
-                    onChange={() => setEnvironment("live")}
-                  />
-                  <Container className="text-left">
-                    <Text variant="bodySmall" className="text-primary font-medium">
-                      Live
-                    </Text>
-                    <Text variant="bodyXSmall" className="text-secondary mt-0.5">
-                      Real transactions. Charges actual payment methods.
-                    </Text>
-                  </Container>
-                </Container>
-
-                <Container
-                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-colors ${
-                    environment === "test"
-                      ? "border-brand-border bg-brand-bg-light"
-                      : "border-border bg-surface hover:bg-muted"
-                  }`}
-                  as="button"
-                  onClick={() => setEnvironment("test")}
-                >
-                  <Radio
-                    label=""
-                    value="test"
-                    checked={environment === "test"}
-                    onChange={() => setEnvironment("test")}
-                  />
-                  <Container className="text-left">
-                    <Text variant="bodySmall" className="text-primary font-medium">
-                      Test
-                    </Text>
-                    <Text variant="bodyXSmall" className="text-secondary mt-0.5">
-                      Sandbox mode. No real charges are made.
-                    </Text>
-                  </Container>
-                </Container>
+              <Text variant="bodyXSmall" className="text-primary font-medium mb-2">Mode</Text>
+              <Container className="flex flex-col gap-2">
+                {(["LIVE", "TEST"] as ApiKeyMode[]).map((m) => (
+                  <ModeCard key={m} value={m} selected={mode === m} onSelect={() => setMode(m)} />
+                ))}
               </Container>
             </Container>
 
-            <Select
-              label="Permissions"
-              value={scope}
-              onChange={(val) => setScope(val as any)}
-              options={[
-                {
-                  value: "full_access",
-                  label: "Full access — read and write everything",
-                },
-                {
-                  value: "read_only",
-                  label: "Read only — view plans, customers, and transactions",
-                },
-                {
-                  value: "webhooks_only",
-                  label: "Webhooks only — receive event notifications",
-                },
-              ]}
-            />
-
-            <Container className="flex items-start gap-3 p-4 bg-brand-bg-light border border-brand-border rounded-xl">
-              <LegalIcon size={16} className="text-brand-text-icons shrink-0 mt-0.5" />
+            <Container className="flex items-start gap-2.5 p-3 bg-brand-bg-light border border-brand-border rounded-xl">
+              <LegalIcon size={14} className="text-brand-text-icons shrink-0 mt-0.5" />
               <Text variant="bodyXSmall" className="text-secondary">
-                SubGrid generates a{" "}
-                <span className="text-primary font-medium">
-                  {environment === "live" ? "sf_live_sk_" : "sf_test_sk_"}
-                </span>
-                prefixed key. You will see the full secret{" "}
-                <span className="text-primary font-medium">only once</span>{" "}
-                after creation.
-              </Text>
-            </Container>
-
-            <Container className="flex items-center gap-3 pt-2">
-              <Button
-                variant="neutral"
-                onClick={handleCancelCreate}
-                className="flex-1 sm:flex-none"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                leftIcon={<AddIcon size={16} />}
-                onClick={handleSubmitCreate}
-                loading={isCreating}
-                disabled={isCreating}
-                className="flex-1 sm:flex-none"
-              >
-                Generate key
-              </Button>
-            </Container>
-          </Container>
-        </Container>
-      )}
-
-      {/* ── Keys list ─────────────────────────────────────── */}
-      {flowState !== "create" && (
-        <Container className="bg-surface border border-border rounded-2xl overflow-hidden">
-          <Container className="px-6 py-4 border-b border-border flex items-center justify-between">
-            <Container>
-              <Text variant="h5" className="text-primary font-semibold">
-                Your API keys
-              </Text>
-              <Text variant="bodyXSmall" className="text-secondary mt-0.5">
-                {MOCK_KEYS.filter((k) => k.is_active).length} active ·{" "}
-                {MOCK_KEYS.filter((k) => !k.is_active).length} revoked
+                Your key will be prefixed with{" "}
+                <span className="font-mono text-primary font-medium">
+                  {mode === "LIVE" ? "sk_live_" : "sk_test_"}
+                </span>{" "}
+                and shown <span className="text-primary font-medium">only once</span> after creation.
               </Text>
             </Container>
           </Container>
 
-          {MOCK_KEYS.length === 0 ? (
-            <Container className="flex flex-col items-center gap-3 py-16 px-6">
-              <Container className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
-                <LegalIcon size={22} className="text-secondary" />
-              </Container>
-              <Text variant="bodySmall" className="text-secondary text-center">
-                No API keys yet. Create one to start integrating.
-              </Text>
-            </Container>
-          ) : (
-            MOCK_KEYS.map((key) => (
-              <KeyRow
-                key={key.id}
-                apiKey={key}
-                onRevoke={(id) => setRevokeTargetId(id)}
-              />
-            ))
-          )}
-        </Container>
+          <Container className="px-6 py-4 border-t border-border flex items-center justify-end gap-3">
+            <Button variant="neutral" onClick={handleCancelCreate} disabled={isCreating}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              leftIcon={<AddIcon size={16} />}
+              onClick={handleSubmitCreate}
+              loading={isCreating}
+              disabled={isCreating}
+            >
+              Generate key
+            </Button>
+          </Container>
+        </Modal>
       )}
 
-      {/* ── Revoke confirmation overlay ───────────────────── */}
+      {/* ── Revoke confirmation modal ─────────────────────── */}
       {revokeTargetId && (
-        <Container className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <Container className="bg-surface rounded-2xl border border-border w-full max-w-md p-6 flex flex-col gap-5">
-            <Container className="flex items-start justify-between gap-4">
-              <Container className="flex items-start gap-3">
-                <Container className="w-9 h-9 rounded-xl bg-danger-bg-light flex items-center justify-center shrink-0">
-                  <DangerIcon size={18} className="text-danger-text-icons" />
-                </Container>
-                <Container>
-                  <Text variant="h5" className="text-primary font-semibold">
-                    Revoke this key?
-                  </Text>
-                  <Text variant="bodyXSmall" className="text-secondary mt-1">
-                    This action is permanent. Any application using this key
-                    will immediately lose API access. You cannot undo this.
-                  </Text>
-                </Container>
+        <Modal onClose={() => setRevokeTargetId(null)}>
+          <Container className="px-6 pt-6 pb-2 flex items-start justify-between gap-4 border-b border-border">
+            <Container className="flex items-start gap-3">
+              <Container className="w-9 h-9 rounded-xl bg-danger-bg-light flex items-center justify-center shrink-0">
+                <DangerIcon size={18} className="text-danger-text-icons" />
               </Container>
-              <Container
-                as="button"
-                onClick={() => setRevokeTargetId(null)}
-                className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center cursor-pointer hover:bg-border transition-colors shrink-0"
-              >
-                <CloseIcon size={14} className="text-secondary" />
+              <Container>
+                <Text variant="h5" className="text-primary font-semibold">Revoke this key?</Text>
+                <Text variant="bodyXSmall" className="text-secondary mt-1">
+                  This is permanent. Any app using this key will immediately lose API access.
+                </Text>
               </Container>
             </Container>
-
-            <Container className="p-3 bg-muted rounded-xl border border-border">
-              <Text variant="bodyXSmall" className="text-secondary font-mono">
-                {MOCK_KEYS.find((k) => k.id === revokeTargetId)?.prefix}
-              </Text>
-              <Text variant="bodyXSmall" className="text-primary font-medium mt-0.5">
-                {MOCK_KEYS.find((k) => k.id === revokeTargetId)?.name}
-              </Text>
-            </Container>
-
-            <Container className="flex items-center gap-3">
-              <Button
-                variant="neutral"
-                className="flex-1"
-                onClick={() => setRevokeTargetId(null)}
-                disabled={isRevoking}
-              >
-                Keep key
-              </Button>
-              <Button
-                variant="danger"
-                className="flex-1"
-                onClick={handleRevokeConfirm}
-                loading={isRevoking}
-                disabled={isRevoking}
-              >
-                Yes, revoke key
-              </Button>
-            </Container>
+            <button
+              type="button"
+              onClick={() => setRevokeTargetId(null)}
+              className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-border transition-colors shrink-0 mt-0.5"
+            >
+              <CloseIcon size={14} className="text-secondary" />
+            </button>
           </Container>
-        </Container>
+
+          {revokeTarget && (
+            <Container className="px-6 py-5">
+              <Container className="p-4 bg-muted rounded-xl border border-border">
+                <Text variant="bodyXSmall" className="text-primary font-medium">{revokeTarget.name}</Text>
+                <Text variant="bodyXSmall" className="text-secondary font-mono mt-0.5">{revokeTarget.secretPreview}</Text>
+              </Container>
+            </Container>
+          )}
+
+          <Container className="px-6 py-4 border-t border-border flex items-center justify-end gap-3">
+            <Button variant="neutral" onClick={() => setRevokeTargetId(null)} disabled={isRevoking}>
+              Keep key
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleRevokeConfirm}
+              loading={isRevoking}
+              disabled={isRevoking}
+            >
+              Yes, revoke key
+            </Button>
+          </Container>
+        </Modal>
       )}
     </Container>
   );

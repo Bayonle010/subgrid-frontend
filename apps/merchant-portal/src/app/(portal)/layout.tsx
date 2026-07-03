@@ -7,7 +7,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     <AuthGuard>
       <Container className="min-h-screen bg-background flex flex-col">
         <PortalNav />
-        <Container as="main" className="flex-1">
+        <Container as="main" className="flex-1 pb-20 md:pb-0">
           {children}
         </Container>
       </Container>

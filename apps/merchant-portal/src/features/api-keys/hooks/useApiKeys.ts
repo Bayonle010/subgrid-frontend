@@ -1,17 +1,15 @@
 import { ChangeEvent, useState } from "react";
 import { useCreateApiKey, useListApiKeys, useRevokeApiKey } from "./api-key.hooks";
-import { ApiKey, ApiKeyEnvironment, ApiKeyScope, CreateApiKeyResponse } from "../types/api-key.type";
+import { ApiKey, ApiKeyMode } from "../types/api-key.type";
 import { createApiKeySchema } from "../types/api-key.schema";
 
 type FlowState = "list" | "create" | "revealed";
-
 type FormErrors = { name?: string };
 
 export const useApiKeysScreen = () => {
   const [flowState, setFlowState] = useState<FlowState>("list");
   const [name, setName] = useState("");
-  const [environment, setEnvironment] = useState<ApiKeyEnvironment>("live");
-  const [scope, setScope] = useState<ApiKeyScope>("full_access");
+  const [mode, setMode] = useState<ApiKeyMode>("TEST");
   const [errors, setErrors] = useState<FormErrors>({});
   const [revealedSecret, setRevealedSecret] = useState("");
   const [revealedKey, setRevealedKey] = useState<ApiKey | null>(null);
@@ -21,9 +19,9 @@ export const useApiKeysScreen = () => {
   const { data: apiKeys = [], isLoading } = useListApiKeys();
 
   const { mutate: createKey, isPending: isCreating } = useCreateApiKey(
-    (data: CreateApiKeyResponse) => {
-      setRevealedSecret(data.secret);
-      setRevealedKey(data.key);
+    (key: ApiKey, secretKey: string) => {
+      setRevealedSecret(secretKey);
+      setRevealedKey(key);
       setFlowState("revealed");
     },
   );
@@ -39,8 +37,7 @@ export const useApiKeysScreen = () => {
 
   const handleStartCreate = () => {
     setName("");
-    setEnvironment("live");
-    setScope("full_access");
+    setMode("TEST");
     setErrors({});
     setFlowState("create");
   };
@@ -53,7 +50,7 @@ export const useApiKeysScreen = () => {
       setErrors({ name: result.error.issues[0].message });
       return;
     }
-    createKey({ name: name.trim(), environment, scope });
+    createKey({ name: name.trim(), mode });
   };
 
   const handleCopySecret = () => {
@@ -70,7 +67,7 @@ export const useApiKeysScreen = () => {
 
   const handleRevokeConfirm = () => {
     if (!revokeTargetId) return;
-    revokeKey({ key_id: revokeTargetId });
+    revokeKey(revokeTargetId);
   };
 
   return {
@@ -78,10 +75,8 @@ export const useApiKeysScreen = () => {
     apiKeys,
     isLoading,
     name,
-    environment,
-    setEnvironment,
-    scope,
-    setScope,
+    mode,
+    setMode,
     errors,
     isCreating,
     revealedSecret,

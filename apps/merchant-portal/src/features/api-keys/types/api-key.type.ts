@@ -1,28 +1,31 @@
-export type ApiKeyEnvironment = "live" | "test";
-export type ApiKeyScope = "full_access" | "read_only" | "webhooks_only";
+export type ApiKeyMode = "TEST" | "LIVE";
+export type ApiKeyStatus = "ACTIVE" | "REVOKED";
 
 export interface ApiKey {
   id: string;
+  accountId: string;
   name: string;
-  prefix: string;
-  environment: ApiKeyEnvironment;
-  scope: ApiKeyScope;
-  created_at: string;
-  last_used_at: string | null;
-  is_active: boolean;
+  clientId: string;
+  secretKey: string | null;
+  secretPreview: string;
+  mode: ApiKeyMode;
+  status: ApiKeyStatus;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
 }
 
 export interface CreateApiKeyPayload {
   name: string;
-  environment: ApiKeyEnvironment;
-  scope: ApiKeyScope;
+  mode: ApiKeyMode;
 }
 
-export interface CreateApiKeyResponse {
-  key: ApiKey;
-  secret: string;
+export interface ApiKeyApiResponse<T> {
+  status: boolean;
+  statusCode: number;
+  message: string;
+  data: T;
 }
 
-export interface RevokeApiKeyPayload {
-  key_id: string;
-}
+export type CreateApiKeyResponse = ApiKeyApiResponse<ApiKey>;
+export type ListApiKeysResponse = ApiKeyApiResponse<ApiKey[]>;
