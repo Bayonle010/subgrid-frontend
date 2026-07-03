@@ -9,7 +9,7 @@ import {
   useResetPassword,
   useVerifyOtp,
 } from "./auth.hooks";
-import { LoginPayload, MerchantProfile, RegisterMerchant, RegisterResponse } from "../types/auth.type";
+import { LoginPayload, MerchantProfile, RegisterMerchant, RegisterResponse, ApiAuthResponse } from "../types/auth.type";
 import {
   emailSchema,
   loginSchema,
@@ -50,13 +50,9 @@ export const useRegisterScreen = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const { mutate, isPending } = useRegister(
-    (data: RegisterResponse) => {
-      setAuth({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        token_type: data.token_type,
-        must_change_password: data.must_change_password,
-      });
+    (res: RegisterResponse) => {
+      const { accessToken, refreshToken, tokenType, tenantId, user } = res.data;
+      setAuth({ accessToken, refreshToken, tokenType, tenantId, user });
       router.replace("/dashboard");
     },
     (e: any) => {
@@ -167,7 +163,7 @@ export const useLoginScreen = () => {
 
   const { mutate: fetchProfile } = useGetProfile(
     (profile: MerchantProfile) => {
-      setAuth((prev: any) => ({ ...prev, userInfo: profile }));
+      setAuth((prev: any) => ({ ...prev, profile }));
       router.replace("/dashboard");
     },
     () => {
@@ -176,13 +172,9 @@ export const useLoginScreen = () => {
   );
 
   const { mutate, isPending } = useLogin(
-    (data) => {
-      setAuth({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        token_type: data.token_type,
-        must_change_password: data.must_change_password,
-      });
+    (res: ApiAuthResponse) => {
+      const { accessToken, refreshToken, tokenType, tenantId, user } = res.data;
+      setAuth({ accessToken, refreshToken, tokenType, tenantId, user });
       fetchProfile();
     },
     (e: any) => {

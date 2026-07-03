@@ -34,8 +34,8 @@ export const PortalNav = () => {
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
 
-  const initials = user?.userInfo?.businessName
-    ? user.userInfo.businessName.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()
+  const initials = user?.user
+    ? `${user.user.firstName?.[0] ?? ""}${user.user.lastName?.[0] ?? ""}`.toUpperCase()
     : "SG";
 
   return (
@@ -101,7 +101,7 @@ export const PortalNav = () => {
               </Container>
               <Container className="hidden sm:block">
                 <Text variant="bodyXSmall" className="text-primary font-medium">
-                  {user?.userInfo?.businessName ?? "Merchant"}
+                  {user?.user ? `${user.user.firstName} ${user.user.lastName}` : "Merchant"}
                 </Text>
               </Container>
               <ChevronDownIcon size={14} className="text-secondary" />
@@ -111,7 +111,7 @@ export const PortalNav = () => {
               as="button"
               onClick={async () => {
                 try {
-                  const refreshToken = user?.refresh_token;
+                  const refreshToken = user?.refreshToken;
                   if (refreshToken) await logout(refreshToken);
                 } catch {
                   // proceed with local logout regardless

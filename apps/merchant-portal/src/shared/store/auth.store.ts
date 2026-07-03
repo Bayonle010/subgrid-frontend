@@ -1,13 +1,14 @@
-import { MerchantProfile } from "@/features/auth/types/auth.type";
+import { AuthTokenUser, MerchantProfile } from "@/features/auth/types/auth.type";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface AuthUser {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  must_change_password: boolean;
-  userInfo?: MerchantProfile;
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  tenantId: string;
+  user: AuthTokenUser;
+  profile?: MerchantProfile;
 }
 
 interface AuthState {

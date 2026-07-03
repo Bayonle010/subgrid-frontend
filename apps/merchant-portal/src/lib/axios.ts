@@ -12,7 +12,7 @@ apiClient.interceptors.request.use(
     if (typeof window !== "undefined") {
       try {
         const raw = localStorage.getItem("auth-store");
-        const token = raw ? JSON.parse(raw)?.state?.user?.access_token : null;
+        const token = raw ? JSON.parse(raw)?.state?.user?.accessToken : null;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }

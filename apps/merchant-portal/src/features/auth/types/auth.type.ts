@@ -7,24 +7,38 @@ export interface RegisterMerchant {
   password: string;
 }
 
-export interface RegisterResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  must_change_password: boolean;
+export interface AuthTokenUser {
+  id: string;
+  tenantId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
 }
+
+export interface AuthTokenData {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  tenantId: string;
+  user: AuthTokenUser;
+}
+
+export interface ApiAuthResponse {
+  status: boolean;
+  statusCode: number;
+  message: string;
+  data: AuthTokenData;
+}
+
+export type RegisterResponse = ApiAuthResponse;
 
 export interface LoginPayload {
   email: string;
   password: string;
 }
 
-export interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  must_change_password: boolean;
-}
+export type LoginResponse = ApiAuthResponse;
 
 export interface ForgotPasswordPayload {
   email: string;

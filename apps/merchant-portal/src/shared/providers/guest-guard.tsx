@@ -23,7 +23,7 @@ export const GuestGuard = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!isHydrated) return;
     const user = useAuthStore.getState().user;
-    if (user?.access_token) {
+    if (user?.accessToken) {
       router.replace("/dashboard");
     }
   }, [isHydrated, router]);
@@ -40,7 +40,7 @@ export const GuestGuard = ({ children }: { children: React.ReactNode }) => {
   }
 
   const user = useAuthStore.getState().user;
-  if (user?.access_token) return null;
+  if (user?.accessToken) return null;
 
   return <>{children}</>;
 };
