@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "@subgrid/ui/styles/tokens.css";
+@import "@subgrid/ui/styles/theme.css";
+
+@source "../../../../packages/ui/src";
+
+@theme inline {
+  --font-sans: var(--font-google-sans-flex);
+}
+
+body {
+  background: var(--background);
+  color: var(--primary);
+}

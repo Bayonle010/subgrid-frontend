@@ -1,0 +1,445 @@
+/* ============================================================
+   LIGHT MODE
+   ============================================================ */
+:root {
+  /* Areas 01 */
+  --background: #FAFAFA;
+  --surface: #FFFFFF;
+  --muted: #F3F3F3;
+  --border: #E8E9E9;
+
+  /* Areas 02 */
+  --background-2: #FFFFFF;
+  --surface-2: #FAFAFA;
+  --muted-2: #F3F3F3;
+  --border-2: #E8E9E9;
+
+  /* Text & Icons */
+  --primary: #121212;
+  --secondary: #97989A;
+  --tertiary: #E1E1E1;
+  --inverted: #FAFAFA;
+
+  /* Brand Primary */
+  --brand-bg-light: #E6E7EE;
+  --brand-border: #B5B6CD;
+  --brand-hover: #393B79;
+  --brand-text-icons: #080A58;
+  --brand-bg-bold: #080A58;
+  --brand-pressed: #050635;
+
+  /* Brand Secondary */
+  --brand-secondary-bg-light: #ECF3E8;
+  --brand-secondary-border: #C5DABB;
+  --brand-secondary-hover: #79AA61;
+  --brand-secondary-text-icons: #3F851D;
+  --brand-secondary-bg-bold: #3F851D;
+  --brand-secondary-pressed: #265011;
+
+  /* Brand Tertiary */
+  --brand-tertiary-bg-light: #F6FCEC;
+  --brand-tertiary-border: #E3F5C6;
+  --brand-tertiary-hover: #B5E568;
+  --brand-tertiary-text-icons: #A3DE42;
+  --brand-tertiary-bg-bold: #A3DE42;
+  --brand-tertiary-pressed: #628528;
+
+  /* Feedback Success */
+  --success-bg-light: #E6F2EC;
+  --success-border: #B3D8C5;
+  --success-hover: #339765;
+  --success-text-icons: #007D3E;
+  --success-bg-bold: #007D3E;
+  --success-pressed: #004B25;
+
+  /* Feedback Danger */
+  --danger-bg-light: #FDE7E7;
+  --danger-border: #F89E9E;
+  --danger-hover: #F24141;
+  --danger-text-icons: #EF1212;
+  --danger-bg-bold: #EF1212;
+  --danger-pressed: #920B0B;
+
+  /* Feedback Warning */
+  --warning-bg-light: #F8EFE6;
+  --warning-border: #E9CEB3;
+  --warning-hover: #C57C33;
+  --warning-text-icons: #B65B00;
+  --warning-bg-bold: #B65B00;
+  --warning-pressed: #6D3700;
+
+  /* Feedback Info */
+  --info-bg-light: #E7F6FD;
+  --info-border: #9CDAF6;
+  --info-hover: #3EB7ED;
+  --info-text-icons: #0EA5E9;
+  --info-bg-bold: #0EA5E9;
+  --info-pressed: #09658E;
+
+  /* Others Indigo */
+  --indigo-bg-light: #DEDDF7;
+  --indigo-border: #ACABEB;
+  --indigo-text-icons: #5856D6;
+  --indigo-bg-bold: #5856D6;
+
+  /* Others Pink */
+  --pink-bg-light: #FFD5DD;
+  --pink-border: #FF96AA;
+  --pink-text-icons: #FF2D55;
+  --pink-bg-bold: #FF2D55;
+
+  /* Others Blue */
+  --blue-bg-light: #CCE4FF;
+  --blue-border: #80BDFF;
+  --blue-text-icons: #007AFF;
+  --blue-bg-bold: #007AFF;
+
+  /* Others Purple */
+  --purple-bg-light: #EFDEF8;
+  --purple-border: #D7AEEF;
+  --purple-text-icons: #AF5CDE;
+  --purple-bg-bold: #AF5CDE;
+
+  /* Others YInMn Blue */
+  --yinmn-blue-bg-light: #DEDFE7;
+  --yinmn-blue-border: #ACACF2;
+  --yinmn-blue-text-icons: #595F85;
+  --yinmn-blue-bg-bold: #595F85;
+
+  /* Others Persian Red */
+  --persian-red-bg-light: #F3DDDA;
+  --persian-red-border: #E1ABA2;
+  --persian-red-text-icons: #C25745;
+  --persian-red-bg-bold: #C25745;
+
+  /* Others Monostone */
+  --monostone-bg-light: #DAE3E5;
+  --monostone-border: #A2B8BE;
+  --monostone-text-icons: #44717D;
+  --monostone-bg-bold: #44717D;
+
+  /* Others Moss Green */
+  --moss-green-bg-light: #DFE2D3;
+  --moss-green-border: #B0B691;
+  --moss-green-text-icons: #606C23;
+  --moss-green-bg-bold: #606C23;
+
+  /* Others Mangenta */
+  --mangenta-bg-light: #EBDFE7;
+  --mangenta-border: #CDAFC2;
+  --mangenta-text-icons: #9B5E85;
+  --mangenta-bg-bold: #9B5E85;
+
+  /* Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+  --radius-full: 1000px;
+
+  /* Shadows */
+  --shadow-100: 0px 4px 4px -2px rgba(24, 39, 75, 0.08), 0px 2px 4px -2px rgba(24, 39, 75, 0.12);
+  --shadow-200: 0px 8px 8px -4px rgba(24, 39, 75, 0.08), 0px 4px 6px -4px rgba(24, 39, 75, 0.12);
+  --shadow-300: 0px 8px 16px -6px rgba(24, 39, 75, 0.08), 0px 6px 8px -6px rgba(24, 39, 75, 0.12);
+  --shadow-400: 0px 8px 24px -4px rgba(24, 39, 75, 0.08), 0px 6px 12px -6px rgba(24, 39, 75, 0.12);
+
+  /* Elevations */
+  --shadow-500: 0px 10px 32px -4px rgba(24, 39, 75, 0.10), 0px 6px 14px -6px rgba(24, 39, 75, 0.12);
+  --shadow-600: 0px 12px 42px -4px rgba(24, 39, 75, 0.12), 0px 8px 18px -6px rgba(24, 39, 75, 0.12);
+  --shadow-700: 0px 14px 64px -4px rgba(24, 39, 75, 0.12), 0px 8px 22px -6px rgba(24, 39, 75, 0.12);
+  --shadow-800: 0px 18px 88px -4px rgba(24, 39, 75, 0.14), 0px 8px 28px -6px rgba(24, 39, 75, 0.12);
+
+  /* Layout Spacing */
+  --spacing-pm-0\.5: 2px;
+  --spacing-pm-1: 4px;
+  --spacing-pm-1\.5: 6px;
+  --spacing-pm-2: 8px;
+  --spacing-pm-2\.5: 10px;
+  --spacing-pm-3: 12px;
+  --spacing-pm-3\.5: 14px;
+  --spacing-pm-4: 16px;
+  --spacing-pm-5: 20px;
+  --spacing-pm-6: 24px;
+  --spacing-pm-8: 32px;
+  --spacing-pm-10: 40px;
+  --spacing-pm-12: 48px;
+  --spacing-pm-16: 64px;
+  --spacing-pm-20: 80px;
+  --spacing-pm-24: 96px;
+  --spacing-pm-32: 128px;
+  --spacing-pm-40: 160px;
+  --spacing-pm-48: 192px;
+  --spacing-pm-64: 256px;
+}
+
+/* ============================================================
+   DARK MODE — class-based (.dark on <html>)
+   ============================================================ */
+.dark {
+  /* Areas 01 */
+  --background: #2A2A2A;
+  --surface: #121212;
+  --muted: #3A3A3A;
+  --border: #414141;
+
+  /* Areas 02 */
+  --background-2: #121212;
+  --surface-2: #2A2A2A;
+  --muted-2: #343434;
+  --border-2: #414141;
+
+  /* Text & Icons */
+  --primary: #FAFAFA;
+  --secondary: #717171;
+  --tertiary: #414141;
+  --inverted: #FAFAFA;
+
+  /* Brand Primary */
+  --brand-bg-light: #030423;
+  --brand-border: #060846;
+  --brand-hover: #080A58;
+  --brand-text-icons: #52548A;
+  --brand-bg-bold: #52548A;
+  --brand-pressed: #8485AC;
+
+  /* Brand Secondary */
+  --brand-secondary-bg-light: #19350C;
+  --brand-secondary-border: #326A17;
+  --brand-secondary-hover: #3F851D;
+  --brand-secondary-text-icons: #79AA61;
+  --brand-secondary-bg-bold: #79AA61;
+  --brand-secondary-pressed: #9FC28E;
+
+  /* Brand Tertiary */
+  --brand-tertiary-bg-light: #41591A;
+  --brand-tertiary-border: #82B235;
+  --brand-tertiary-hover: #A3DE42;
+  --brand-tertiary-text-icons: #B5E568;
+  --brand-tertiary-bg-bold: #B5E568;
+  --brand-tertiary-pressed: #D1EFA1;
+
+  /* Feedback Success */
+  --success-bg-light: #003219;
+  --success-border: #006432;
+  --success-hover: #007D3E;
+  --success-text-icons: #339765;
+  --success-bg-bold: #339765;
+  --success-pressed: #80BE9F;
+
+  /* Feedback Danger */
+  --danger-bg-light: #480505;
+  --danger-border: #BF0E0E;
+  --danger-hover: #EF1212;
+  --danger-text-icons: #F24141;
+  --danger-bg-bold: #F24141;
+  --danger-pressed: #F67676;
+
+  /* Feedback Warning */
+  --warning-bg-light: #492400;
+  --warning-border: #924900;
+  --warning-hover: #B65B00;
+  --warning-text-icons: #C57C33;
+  --warning-bg-bold: #C57C33;
+  --warning-pressed: #DBAD80;
+
+  /* Feedback Info */
+  --info-bg-light: #133747;
+  --info-border: #0B84BA;
+  --info-hover: #0EA5E9;
+  --info-text-icons: #3EB7ED;
+  --info-bg-bold: #3EB7ED;
+  --info-pressed: #73CBF2;
+
+  /* Others Indigo */
+  --indigo-bg-light: #232256;
+  --indigo-border: #4645AB;
+  --indigo-text-icons: #7978DE;
+  --indigo-bg-bold: #7978DE;
+
+  /* Others Pink */
+  --pink-bg-light: #4D0E1A;
+  --pink-border: #CC2444;
+  --pink-text-icons: #FF5777;
+  --pink-bg-bold: #FF5777;
+
+  /* Others Blue */
+  --blue-bg-light: #232256;
+  --blue-border: #0062CC;
+  --blue-text-icons: #3395FF;
+  --blue-bg-bold: #3395FF;
+
+  /* Others Purple */
+  --purple-bg-light: #462559;
+  --purple-border: #8C4AB2;
+  --purple-text-icons: #BF7DE5;
+  --purple-bg-bold: #BF7DE5;
+
+  /* Others YInMn Blue */
+  --yinmn-blue-bg-light: #2D3043;
+  --yinmn-blue-border: #474C6A;
+  --yinmn-blue-text-icons: #7A7F9D;
+  --yinmn-blue-bg-bold: #7A7F9D;
+
+  /* Others Persian Red */
+  --persian-red-bg-light: #4E231C;
+  --persian-red-border: #9B4637;
+  --persian-red-text-icons: #CE796A;
+  --persian-red-bg-bold: #CE796A;
+
+  /* Others Monostone */
+  --monostone-bg-light: #1B2D32;
+  --monostone-border: #365A64;
+  --monostone-text-icons: #698D97;
+  --monostone-bg-bold: #698D97;
+
+  /* Others Moss Green */
+  --moss-green-bg-light: #262B0E;
+  --moss-green-border: #4D561C;
+  --moss-green-text-icons: #80894F;
+  --moss-green-bg-bold: #80894F;
+
+  /* Others Mangenta */
+  --mangenta-bg-light: #3E2635;
+  --mangenta-border: #7C4B6A;
+  --mangenta-text-icons: #AF7E9D;
+  --mangenta-bg-bold: #AF7E9D;
+}
+
+/* ============================================================
+   DARK MODE — OS preference
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    /* Areas 01 */
+    --background: #2A2A2A;
+    --surface: #121212;
+    --muted: #3A3A3A;
+    --border: #414141;
+
+    /* Areas 02 */
+    --background-2: #121212;
+    --surface-2: #2A2A2A;
+    --muted-2: #343434;
+    --border-2: #414141;
+
+    /* Text & Icons */
+    --primary: #FAFAFA;
+    --secondary: #717171;
+    --tertiary: #414141;
+    --inverted: #FAFAFA;
+
+    /* Brand Primary */
+    --brand-bg-light: #030423;
+    --brand-border: #060846;
+    --brand-hover: #080A58;
+    --brand-text-icons: #52548A;
+    --brand-bg-bold: #52548A;
+    --brand-pressed: #6B6C9B;
+
+    /* Brand Secondary */
+    --brand-secondary-bg-light: #19350C;
+    --brand-secondary-border: #326A17;
+    --brand-secondary-hover: #3F851D;
+    --brand-secondary-text-icons: #79AA61;
+    --brand-secondary-bg-bold: #79AA61;
+    --brand-secondary-pressed: #9FC28E;
+
+    /* Brand Tertiary */
+    --brand-tertiary-bg-light: #41591A;
+    --brand-tertiary-border: #82B235;
+    --brand-tertiary-hover: #A3DE42;
+    --brand-tertiary-text-icons: #B5E568;
+    --brand-tertiary-bg-bold: #B5E568;
+    --brand-tertiary-pressed: #D1EFA1;
+
+    /* Feedback Success */
+    --success-bg-light: #003219;
+    --success-border: #006432;
+    --success-hover: #007D3E;
+    --success-text-icons: #339765;
+    --success-bg-bold: #339765;
+    --success-pressed: #80BE9F;
+
+    /* Feedback Danger */
+    --danger-bg-light: #480505;
+    --danger-border: #BF0E0E;
+    --danger-hover: #EF1212;
+    --danger-text-icons: #F24141;
+    --danger-bg-bold: #F24141;
+    --danger-pressed: #F67676;
+
+    /* Feedback Warning */
+    --warning-bg-light: #492400;
+    --warning-border: #924900;
+    --warning-hover: #B65B00;
+    --warning-text-icons: #C57C33;
+    --warning-bg-bold: #C57C33;
+    --warning-pressed: #DBAD80;
+
+    /* Feedback Info */
+    --info-bg-light: #133747;
+    --info-border: #0B84BA;
+    --info-hover: #0EA5E9;
+    --info-text-icons: #3EB7ED;
+    --info-bg-bold: #3EB7ED;
+    --info-pressed: #73CBF2;
+
+    /* Others Indigo */
+    --indigo-bg-light: #232256;
+    --indigo-border: #4645AB;
+    --indigo-text-icons: #7978DE;
+    --indigo-bg-bold: #7978DE;
+
+    /* Others Pink */
+    --pink-bg-light: #4D0E1A;
+    --pink-border: #CC2444;
+    --pink-text-icons: #FF5777;
+    --pink-bg-bold: #FF5777;
+
+    /* Others Blue */
+    --blue-bg-light: #232256;
+    --blue-border: #0062CC;
+    --blue-text-icons: #3395FF;
+    --blue-bg-bold: #3395FF;
+
+    /* Others Purple */
+    --purple-bg-light: #462559;
+    --purple-border: #8C4AB2;
+    --purple-text-icons: #BF7DE5;
+    --purple-bg-bold: #BF7DE5;
+
+    /* Others YInMn Blue */
+    --yinmn-blue-bg-light: #2D3043;
+    --yinmn-blue-border: #474C6A;
+    --yinmn-blue-text-icons: #7A7F9D;
+    --yinmn-blue-bg-bold: #7A7F9D;
+
+    /* Others Persian Red */
+    --persian-red-bg-light: #4E231C;
+    --persian-red-border: #9B4637;
+    --persian-red-text-icons: #CE796A;
+    --persian-red-bg-bold: #CE796A;
+
+    /* Others Monostone */
+    --monostone-bg-light: #1B2D32;
+    --monostone-border: #365A64;
+    --monostone-text-icons: #698D97;
+    --monostone-bg-bold: #698D97;
+
+    /* Others Moss Green */
+    --moss-green-bg-light: #262B0E;
+    --moss-green-border: #4D561C;
+    --moss-green-text-icons: #80894F;
+    --moss-green-bg-bold: #80894F;
+
+    /* Others Mangenta */
+    --mangenta-bg-light: #3E2635;
+    --mangenta-border: #7C4B6A;
+    --mangenta-text-icons: #AF7E9D;
+    --mangenta-bg-bold: #AF7E9D;
+  }
+}

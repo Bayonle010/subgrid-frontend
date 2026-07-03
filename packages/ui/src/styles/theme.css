@@ -1,0 +1,174 @@
+@theme inline {
+  /* Areas 01 */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  /* Areas 02 */
+  --color-background-2: var(--background-2);
+  --color-surface-2: var(--surface-2);
+  --color-muted-2: var(--muted-2);
+  --color-border-2: var(--border-2);
+
+  /* Text & Icons */
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
+  --color-inverted: var(--inverted);
+
+  /* Brand Primary */
+  --color-brand-bg-light: var(--brand-bg-light);
+  --color-brand-border: var(--brand-border);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-text-icons: var(--brand-text-icons);
+  --color-brand-bg-bold: var(--brand-bg-bold);
+  --color-brand-pressed: var(--brand-pressed);
+
+  /* Brand Secondary */
+  --color-brand-secondary-bg-light: var(--brand-secondary-bg-light);
+  --color-brand-secondary-border: var(--brand-secondary-border);
+  --color-brand-secondary-hover: var(--brand-secondary-hover);
+  --color-brand-secondary-text-icons: var(--brand-secondary-text-icons);
+  --color-brand-secondary-bg-bold: var(--brand-secondary-bg-bold);
+  --color-brand-secondary-pressed: var(--brand-secondary-pressed);
+
+  /* Brand Tertiary */
+  --color-brand-tertiary-bg-light: var(--brand-tertiary-bg-light);
+  --color-brand-tertiary-border: var(--brand-tertiary-border);
+  --color-brand-tertiary-hover: var(--brand-tertiary-hover);
+  --color-brand-tertiary-text-icons: var(--brand-tertiary-text-icons);
+  --color-brand-tertiary-bg-bold: var(--brand-tertiary-bg-bold);
+  --color-brand-tertiary-pressed: var(--brand-tertiary-pressed);
+
+  /* Feedback Success */
+  --color-success-bg-light: var(--success-bg-light);
+  --color-success-border: var(--success-border);
+  --color-success-hover: var(--success-hover);
+  --color-success-text-icons: var(--success-text-icons);
+  --color-success-bg-bold: var(--success-bg-bold);
+  --color-success-pressed: var(--success-pressed);
+
+  /* Feedback Danger */
+  --color-danger-bg-light: var(--danger-bg-light);
+  --color-danger-border: var(--danger-border);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-text-icons: var(--danger-text-icons);
+  --color-danger-bg-bold: var(--danger-bg-bold);
+  --color-danger-pressed: var(--danger-pressed);
+
+  /* Feedback Warning */
+  --color-warning-bg-light: var(--warning-bg-light);
+  --color-warning-border: var(--warning-border);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-text-icons: var(--warning-text-icons);
+  --color-warning-bg-bold: var(--warning-bg-bold);
+  --color-warning-pressed: var(--warning-pressed);
+
+  /* Feedback Info */
+  --color-info-bg-light: var(--info-bg-light);
+  --color-info-border: var(--info-border);
+  --color-info-hover: var(--info-hover);
+  --color-info-text-icons: var(--info-text-icons);
+  --color-info-bg-bold: var(--info-bg-bold);
+  --color-info-pressed: var(--info-pressed);
+
+  /* Others Indigo */
+  --color-indigo-bg-light: var(--indigo-bg-light);
+  --color-indigo-border: var(--indigo-border);
+  --color-indigo-text-icons: var(--indigo-text-icons);
+  --color-indigo-bg-bold: var(--indigo-bg-bold);
+
+  /* Others Pink */
+  --color-pink-bg-light: var(--pink-bg-light);
+  --color-pink-border: var(--pink-border);
+  --color-pink-text-icons: var(--pink-text-icons);
+  --color-pink-bg-bold: var(--pink-bg-bold);
+
+  /* Others Blue */
+  --color-blue-bg-light: var(--blue-bg-light);
+  --color-blue-border: var(--blue-border);
+  --color-blue-text-icons: var(--blue-text-icons);
+  --color-blue-bg-bold: var(--blue-bg-bold);
+
+  /* Others Purple */
+  --color-purple-bg-light: var(--purple-bg-light);
+  --color-purple-border: var(--purple-border);
+  --color-purple-text-icons: var(--purple-text-icons);
+  --color-purple-bg-bold: var(--purple-bg-bold);
+
+  /* Others YInMn Blue */
+  --color-yinmn-blue-bg-light: var(--yinmn-blue-bg-light);
+  --color-yinmn-blue-border: var(--yinmn-blue-border);
+  --color-yinmn-blue-text-icons: var(--yinmn-blue-text-icons);
+  --color-yinmn-blue-bg-bold: var(--yinmn-blue-bg-bold);
+
+  /* Others Persian Red */
+  --color-persian-red-bg-light: var(--persian-red-bg-light);
+  --color-persian-red-border: var(--persian-red-border);
+  --color-persian-red-text-icons: var(--persian-red-text-icons);
+  --color-persian-red-bg-bold: var(--persian-red-bg-bold);
+
+  /* Others Monostone */
+  --color-monostone-bg-light: var(--monostone-bg-light);
+  --color-monostone-border: var(--monostone-border);
+  --color-monostone-text-icons: var(--monostone-text-icons);
+  --color-monostone-bg-bold: var(--monostone-bg-bold);
+
+  /* Others Moss Green */
+  --color-moss-green-bg-light: var(--moss-green-bg-light);
+  --color-moss-green-border: var(--moss-green-border);
+  --color-moss-green-text-icons: var(--moss-green-text-icons);
+  --color-moss-green-bg-bold: var(--moss-green-bg-bold);
+
+  /* Others Mangenta */
+  --color-mangenta-bg-light: var(--mangenta-bg-light);
+  --color-mangenta-border: var(--mangenta-border);
+  --color-mangenta-text-icons: var(--mangenta-text-icons);
+  --color-mangenta-bg-bold: var(--mangenta-bg-bold);
+
+  /* Radius */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+  --radius-4xl: var(--radius-4xl);
+  --radius-full: var(--radius-full);
+
+  /* Shadows */
+  --shadow-100: var(--shadow-100);
+  --shadow-200: var(--shadow-200);
+  --shadow-300: var(--shadow-300);
+  --shadow-400: var(--shadow-400);
+
+  /* Elevations */
+  --shadow-500: var(--shadow-500);
+  --shadow-600: var(--shadow-600);
+  --shadow-700: var(--shadow-700);
+  --shadow-800: var(--shadow-800);
+
+  /* Layout Spacing */
+  --spacing-pm-0\.5: var(--spacing-pm-0\.5);
+  --spacing-pm-1: var(--spacing-pm-1);
+  --spacing-pm-1\.5: var(--spacing-pm-1\.5);
+  --spacing-pm-2: var(--spacing-pm-2);
+  --spacing-pm-2\.5: var(--spacing-pm-2\.5);
+  --spacing-pm-3: var(--spacing-pm-3);
+  --spacing-pm-3\.5: var(--spacing-pm-3\.5);
+  --spacing-pm-4: var(--spacing-pm-4);
+  --spacing-pm-5: var(--spacing-pm-5);
+  --spacing-pm-6: var(--spacing-pm-6);
+  --spacing-pm-8: var(--spacing-pm-8);
+  --spacing-pm-10: var(--spacing-pm-10);
+  --spacing-pm-12: var(--spacing-pm-12);
+  --spacing-pm-16: var(--spacing-pm-16);
+  --spacing-pm-20: var(--spacing-pm-20);
+  --spacing-pm-24: var(--spacing-pm-24);
+  --spacing-pm-32: var(--spacing-pm-32);
+  --spacing-pm-40: var(--spacing-pm-40);
+  --spacing-pm-48: var(--spacing-pm-48);
+  --spacing-pm-64: var(--spacing-pm-64);
+}
