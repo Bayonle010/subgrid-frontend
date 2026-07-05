@@ -12,6 +12,7 @@ import {
   ChevronDownIcon,
   LogoutIcon,
   CopyIcon,
+  DrawerOutIcon,
 } from "@subgrid/ui/icons";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,10 +21,11 @@ import { logout } from "@/features/auth/services/auth.service";
 
 const navItems = [
   { title: "Dashboard", link: "/dashboard", icon: <PlaceholderIcon size={18} />, slug: "dashboard" },
-  { title: "Plans", link: "/plans", icon: <LegalIcon size={18} />, slug: "plans" },
+  { title: "Products", link: "/products", icon: <LegalIcon size={18} />, slug: "products" },
   { title: "Customers", link: "/customers", icon: <UserIcon size={18} />, slug: "customers" },
   { title: "Transactions", link: "/transactions", icon: <WalletIcon size={18} />, slug: "transactions" },
   { title: "API Keys", link: "/api-keys", icon: <CopyIcon size={18} />, slug: "api-keys" },
+  { title: "Webhooks", link: "/webhooks", icon: <DrawerOutIcon size={18} />, slug: "webhooks" },
   { title: "Settings", link: "/settings", icon: <ThemeIcon size={18} />, slug: "settings" },
 ];
 
