@@ -51,6 +51,7 @@ const AddEndpointModal = ({
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
+  const [selectedEvents, setSelectedEvents] = useState<Set<WebhookEvent>>(new Set());
 
   const { mutate, isPending } = useCreateWebhook((webhook) => {
     onCreated(webhook);
@@ -67,11 +68,32 @@ const AddEndpointModal = ({
     }
   };
 
+  const toggleEvent = (event: WebhookEvent, checked: boolean) => {
+    setSelectedEvents((prev) => {
+      const next = new Set(prev);
+      checked ? next.add(event) : next.delete(event);
+      return next;
+    });
+  };
+
+  const toggleGroup = (events: WebhookEvent[]) => {
+    const allSelected = events.every((e) => selectedEvents.has(e));
+    setSelectedEvents((prev) => {
+      const next = new Set(prev);
+      events.forEach((e) => (allSelected ? next.delete(e) : next.add(e)));
+      return next;
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const err = validateUrl(url.trim());
     if (err) { setUrlError(err); return; }
-    mutate({ name: name.trim(), url: url.trim() });
+    mutate({
+      name: name.trim(),
+      url: url.trim(),
+      subscribedEvents: selectedEvents.size > 0 ? Array.from(selectedEvents) : undefined,
+    });
   };
 
   const isValid = name.trim() && url.trim() && !urlError;
@@ -95,7 +117,7 @@ const AddEndpointModal = ({
       </Container>
 
       <form onSubmit={handleSubmit}>
-        <Container className="px-6 py-5 flex flex-col gap-4">
+        <Container className="px-6 py-5 flex flex-col gap-5 max-h-[65vh] overflow-y-auto">
           <Input
             label="Endpoint name"
             placeholder="e.g. Production server, Slack alerts"
@@ -118,11 +140,72 @@ const AddEndpointModal = ({
             </Text>
           </Container>
 
-          <Container className="flex items-start gap-2.5 px-3 py-3 bg-brand-bg-light border border-brand-border rounded-xl">
-            <DrawerOutIcon size={14} className="text-brand-text-icons shrink-0 mt-0.5" />
+          {/* Events */}
+          <Container>
+            <Container className="flex items-center justify-between mb-2">
+              <Container>
+                <Text variant="bodySmall" className="text-primary font-medium">Events to listen to</Text>
+                <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+                  Leave all unselected to receive every event.
+                </Text>
+              </Container>
+              {selectedEvents.size > 0 && (
+                <Text variant="bodyXSmall" className="text-brand-text-icons font-medium shrink-0 ml-2">
+                  {selectedEvents.size} selected
+                </Text>
+              )}
+            </Container>
+
+            {selectedEvents.size === 0 && (
+              <Container className="flex items-start gap-2 mb-3 px-3 py-2.5 bg-brand-bg-light border border-brand-border rounded-xl">
+                <DrawerOutIcon size={13} className="text-brand-text-icons shrink-0 mt-0.5" />
+                <Text variant="bodyXSmall" className="text-secondary">
+                  Subscribed to <span className="text-primary font-medium">all events</span>. Select specific events to narrow down.
+                </Text>
+              </Container>
+            )}
+
+            <Container className="flex flex-col gap-4">
+              {WEBHOOK_EVENT_GROUPS.map((group) => {
+                const groupEventValues = group.events.map((e) => e.value);
+                const allChecked = groupEventValues.every((e) => selectedEvents.has(e));
+                const someChecked = groupEventValues.some((e) => selectedEvents.has(e));
+                return (
+                  <Container key={group.label}>
+                    <Container className="flex items-center justify-between mb-2">
+                      <Text variant="bodyXSmall" className="text-secondary font-medium uppercase tracking-wider">
+                        {group.label}
+                      </Text>
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(groupEventValues)}
+                        className="text-[11px] font-medium text-brand-text-icons hover:underline cursor-pointer"
+                      >
+                        {allChecked ? "Deselect all" : someChecked ? "Select all" : "Select all"}
+                      </button>
+                    </Container>
+                    <Container className="flex flex-col gap-1.5">
+                      {group.events.map((ev) => (
+                        <EventCheckbox
+                          key={ev.value}
+                          value={ev.value}
+                          label={ev.label}
+                          description={ev.description}
+                          checked={selectedEvents.has(ev.value)}
+                          onChange={(checked) => toggleEvent(ev.value, checked)}
+                        />
+                      ))}
+                    </Container>
+                  </Container>
+                );
+              })}
+            </Container>
+          </Container>
+
+          <Container className="flex items-start gap-2.5 px-3 py-3 bg-muted border border-border rounded-xl">
+            <DrawerOutIcon size={14} className="text-secondary shrink-0 mt-0.5" />
             <Text variant="bodyXSmall" className="text-secondary">
-              A <span className="font-mono text-primary font-medium">signing secret</span> will be generated after creation.
-              Use it to verify that webhook payloads originate from SubGrid.
+              A <span className="font-mono text-primary font-medium">signing secret</span> will be generated after creation — copy it immediately, it won&apos;t be shown again.
             </Text>
           </Container>
         </Container>

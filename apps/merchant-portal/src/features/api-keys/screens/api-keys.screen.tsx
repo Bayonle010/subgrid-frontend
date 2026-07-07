@@ -122,6 +122,14 @@ const KeyRow = ({ apiKey, onRevoke }: { apiKey: ApiKey; onRevoke: (id: string) =
           </Text>
           <Container className="flex items-center gap-2 mt-1">
             <Text variant="bodyXSmall" className="text-secondary">
+              Client ID:
+            </Text>
+            <Text variant="bodyXSmall" className="text-primary font-mono">
+              {apiKey.clientId}
+            </Text>
+          </Container>
+          <Container className="flex items-center gap-2 mt-1">
+            <Text variant="bodyXSmall" className="text-secondary">
               Created {new Date(apiKey.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </Text>
             <span className="text-secondary text-xs">·</span>

@@ -1,17 +1,13 @@
 export type WebhookStatus = "ACTIVE" | "DISABLED";
 
 export type WebhookEvent =
-  | "PAYMENT_FAILED"
-  | "PAYMENT_SUCCEEDED"
   | "SUBSCRIPTION_ACTIVATED"
+  | "SUBSCRIPTION_UPDATED"
   | "SUBSCRIPTION_CANCELLED"
-  | "SUBSCRIPTION_RENEWED"
-  | "PLAN_CREATED"
-  | "PLAN_UPDATED"
-  | "PLAN_ARCHIVED"
-  | "PRODUCT_CREATED"
-  | "PRODUCT_ARCHIVED"
-  | "CUSTOMER_CREATED";
+  | "INVOICE_PAID"
+  | "PAYMENT_SUCCEEDED"
+  | "PAYMENT_FAILED"
+  | "PAYMENT_METHOD_UPDATED";
 
 export interface WebhookEventGroup {
   label: string;
@@ -20,39 +16,25 @@ export interface WebhookEventGroup {
 
 export const WEBHOOK_EVENT_GROUPS: WebhookEventGroup[] = [
   {
+    label: "Subscriptions",
+    events: [
+      { value: "SUBSCRIPTION_ACTIVATED", label: "SUBSCRIPTION_ACTIVATED", description: "A new subscription is activated" },
+      { value: "SUBSCRIPTION_UPDATED", label: "SUBSCRIPTION_UPDATED", description: "A subscription is updated" },
+      { value: "SUBSCRIPTION_CANCELLED", label: "SUBSCRIPTION_CANCELLED", description: "A subscription is cancelled" },
+    ],
+  },
+  {
     label: "Payments",
     events: [
       { value: "PAYMENT_SUCCEEDED", label: "PAYMENT_SUCCEEDED", description: "A payment is processed successfully" },
       { value: "PAYMENT_FAILED", label: "PAYMENT_FAILED", description: "A payment attempt fails" },
+      { value: "PAYMENT_METHOD_UPDATED", label: "PAYMENT_METHOD_UPDATED", description: "A customer's payment method is updated" },
     ],
   },
   {
-    label: "Subscriptions",
+    label: "Invoices",
     events: [
-      { value: "SUBSCRIPTION_ACTIVATED", label: "SUBSCRIPTION_ACTIVATED", description: "A new subscription is activated" },
-      { value: "SUBSCRIPTION_CANCELLED", label: "SUBSCRIPTION_CANCELLED", description: "A subscription is cancelled" },
-      { value: "SUBSCRIPTION_RENEWED", label: "SUBSCRIPTION_RENEWED", description: "A subscription renews successfully" },
-    ],
-  },
-  {
-    label: "Plans",
-    events: [
-      { value: "PLAN_CREATED", label: "PLAN_CREATED", description: "A new plan is created" },
-      { value: "PLAN_UPDATED", label: "PLAN_UPDATED", description: "A plan is updated" },
-      { value: "PLAN_ARCHIVED", label: "PLAN_ARCHIVED", description: "A plan is archived" },
-    ],
-  },
-  {
-    label: "Products",
-    events: [
-      { value: "PRODUCT_CREATED", label: "PRODUCT_CREATED", description: "A new product is created" },
-      { value: "PRODUCT_ARCHIVED", label: "PRODUCT_ARCHIVED", description: "A product is archived" },
-    ],
-  },
-  {
-    label: "Customers",
-    events: [
-      { value: "CUSTOMER_CREATED", label: "CUSTOMER_CREATED", description: "A new customer subscribes" },
+      { value: "INVOICE_PAID", label: "INVOICE_PAID", description: "An invoice is marked as paid" },
     ],
   },
 ];
@@ -73,6 +55,7 @@ export interface Webhook {
 export interface CreateWebhookPayload {
   name: string;
   url: string;
+  subscribedEvents?: WebhookEvent[];
 }
 
 export interface UpdateWebhookPayload {

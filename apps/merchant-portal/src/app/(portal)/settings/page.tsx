@@ -1,11 +1,13 @@
 "use client";
 import { Container, Text, Input, Button } from "@subgrid/ui";
-import { ThemeIcon } from "@subgrid/ui/icons";
+import { ThemeIcon, PayIcon, ChevronRightIcon, DrawerOutIcon, ScrollIcon } from "@subgrid/ui/icons";
 import { useAuthStore } from "@/shared/store/auth.store";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
   const { user } = useAuthStore();
   const profile = user?.user;
+  const router = useRouter();
 
   return (
     <Container className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8">
@@ -62,6 +64,26 @@ export default function SettingsPage() {
               </Button>
             </Container>
           </Container>
+
+          <button
+            onClick={() => router.push("/webhooks")}
+            className="w-full bg-surface border border-border rounded-2xl p-6 text-left hover:bg-muted/40 transition-colors cursor-pointer group"
+          >
+            <Container className="flex items-center justify-between">
+              <Container className="flex items-center gap-4">
+                <Container className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
+                  <DrawerOutIcon size={18} className="text-secondary" />
+                </Container>
+                <Container>
+                  <Text variant="bodySmall" className="text-primary font-semibold">Webhooks</Text>
+                  <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+                    Register endpoints to receive real-time event notifications
+                  </Text>
+                </Container>
+              </Container>
+              <ChevronRightIcon size={16} className="text-secondary group-hover:text-primary transition-colors shrink-0" />
+            </Container>
+          </button>
         </Container>
 
         <Container className="flex flex-col gap-4">
@@ -72,9 +94,49 @@ export default function SettingsPage() {
             </Text>
             <Container className="h-px bg-border mb-4" />
             <Text variant="bodyXSmall" className="text-secondary">
-              More settings coming soon — billing, notifications, team members, and webhooks.
+              More settings coming soon — billing, notifications, and team members.
             </Text>
           </Container>
+
+          <button
+            onClick={() => router.push("/payouts")}
+            className="w-full bg-surface border border-border rounded-2xl p-5 text-left hover:bg-muted/40 transition-colors cursor-pointer group"
+          >
+            <Container className="flex items-center justify-between">
+              <Container className="flex items-center gap-3">
+                <Container className="w-9 h-9 rounded-xl bg-brand-bg-light flex items-center justify-center shrink-0">
+                  <PayIcon size={16} className="text-brand-text-icons" />
+                </Container>
+                <Container>
+                  <Text variant="bodySmall" className="text-primary font-semibold">Banking & Payouts</Text>
+                  <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+                    Manage bank accounts and withdraw funds
+                  </Text>
+                </Container>
+              </Container>
+              <ChevronRightIcon size={16} className="text-secondary group-hover:text-primary transition-colors shrink-0" />
+            </Container>
+          </button>
+
+          <button
+            onClick={() => router.push("/withdrawals")}
+            className="w-full bg-surface border border-border rounded-2xl p-5 text-left hover:bg-muted/40 transition-colors cursor-pointer group"
+          >
+            <Container className="flex items-center justify-between">
+              <Container className="flex items-center gap-3">
+                <Container className="w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
+                  <ScrollIcon size={16} className="text-secondary" />
+                </Container>
+                <Container>
+                  <Text variant="bodySmall" className="text-primary font-semibold">Withdrawal History</Text>
+                  <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+                    View and track all past withdrawals
+                  </Text>
+                </Container>
+              </Container>
+              <ChevronRightIcon size={16} className="text-secondary group-hover:text-primary transition-colors shrink-0" />
+            </Container>
+          </button>
         </Container>
       </Container>
     </Container>

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Container, Text, Input, Select, Button } from "@subgrid/ui";
+import { Container, Text, Button } from "@subgrid/ui";
 import {
   WalletIcon,
   UserIcon,
@@ -9,7 +9,6 @@ import {
   WarningIcon,
   DangerIcon,
   PendingIcon,
-  CopyIcon,
   ScrollIcon,
   AddIcon,
   ChevronRightIcon,
@@ -18,42 +17,45 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EmptyState } from "@/shared/ui/empty-state";
 import { useListApiKeys } from "@/features/api-keys/hooks/api-key.hooks";
+import { useGetLedgerBalance } from "@/features/ledger/hooks/ledger.hooks";
+import { useListCustomers } from "@/features/customers/hooks/customer.hooks";
+import { useGetSubscriptionAnalytics, useListSubscriptions } from "@/features/subscriptions/hooks/subscription.hooks";
+import { WithdrawModal } from "@/features/withdrawals/screens/withdrawals.screen";
 
-type Status = "active" | "trialing" | "cancelled" | "past_due";
+type SubStatus = "ACTIVE" | "TRIALING" | "CANCELLED" | "PAST_DUE" | "INCOMPLETE" | "EXPIRED";
 
-const STATUS_CONFIG: Record<Status, { label: string; icon: React.ReactNode; className: string }> = {
-  active: {
+const STATUS_CONFIG: Record<SubStatus, { label: string; icon: React.ReactNode; className: string }> = {
+  ACTIVE: {
     label: "Active",
     icon: <SuccessIcon size={12} className="text-success-text-icons" />,
     className: "bg-success-bg-light text-success-text-icons border-success-border",
   },
-  trialing: {
-    label: "Trial",
+  TRIALING: {
+    label: "Trialing",
     icon: <PendingIcon size={12} className="text-warning-text-icons" />,
     className: "bg-warning-bg-light text-warning-text-icons border-warning-border",
   },
-  cancelled: {
+  CANCELLED: {
     label: "Cancelled",
     icon: <DangerIcon size={12} className="text-danger-text-icons" />,
     className: "bg-danger-bg-light text-danger-text-icons border-danger-border",
   },
-  past_due: {
+  PAST_DUE: {
     label: "Past due",
     icon: <WarningIcon size={12} className="text-warning-text-icons" />,
     className: "bg-warning-bg-light text-warning-text-icons border-warning-border",
   },
+  INCOMPLETE: {
+    label: "Incomplete",
+    icon: <PendingIcon size={12} className="text-secondary" />,
+    className: "bg-muted text-secondary border-border",
+  },
+  EXPIRED: {
+    label: "Expired",
+    icon: <WarningIcon size={12} className="text-secondary" />,
+    className: "bg-muted text-secondary border-border",
+  },
 };
-
-const subscriptions: {
-  id: string;
-  customer: string;
-  email: string;
-  plan: string;
-  amount: string;
-  cycle: string;
-  status: Status;
-  date: string;
-}[] = [];
 
 const StatCard = ({
   label,
@@ -61,12 +63,16 @@ const StatCard = ({
   sub,
   icon,
   accent = false,
+  loading = false,
+  action,
 }: {
   label: string;
   value: string;
   sub: string;
   icon: React.ReactNode;
   accent?: boolean;
+  loading?: boolean;
+  action?: { label: string; onClick: () => void };
 }) => (
   <Container
     className={`rounded-2xl p-5 border flex flex-col gap-4 ${
@@ -81,18 +87,32 @@ const StatCard = ({
         {icon}
       </Container>
     </Container>
-    <Container>
-      <Text variant="h3" className={accent ? "text-inverted" : "text-primary"}>
-        {value}
-      </Text>
-      <Text variant="bodyXSmall" className={accent ? "text-white/50 mt-0.5" : "text-secondary mt-0.5"}>
-        {sub}
-      </Text>
+    <Container className="flex items-end justify-between gap-2">
+      <Container>
+        {loading ? (
+          <Container className={`h-8 w-36 rounded-lg animate-pulse ${accent ? "bg-white/20" : "bg-muted"}`} />
+        ) : (
+          <Text variant="h3" className={accent ? "text-inverted" : "text-primary"}>
+            {value}
+          </Text>
+        )}
+        <Text variant="bodyXSmall" className={accent ? "text-white/50 mt-0.5" : "text-secondary mt-0.5"}>
+          {sub}
+        </Text>
+      </Container>
+      {action && (
+        <button
+          onClick={action.onClick}
+          className="shrink-0 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-colors cursor-pointer"
+        >
+          {action.label}
+        </button>
+      )}
     </Container>
   </Container>
 );
 
-const StatusBadge = ({ status }: { status: Status }) => {
+const StatusBadge = ({ status }: { status: SubStatus }) => {
   const cfg = STATUS_CONFIG[status];
   return (
     <Container className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${cfg.className}`}>
@@ -116,20 +136,23 @@ const KeySkeleton = () => (
 );
 
 export default function DashboardPage() {
-  const [search, setSearch] = useState("");
-  const [planFilter, setPlanFilter] = useState("");
+  const [showWithdraw, setShowWithdraw] = useState(false);
   const router = useRouter();
 
   const { data: apiKeys, isLoading: keysLoading } = useListApiKeys();
+  const { data: balance, isLoading: balanceLoading } = useGetLedgerBalance();
+  const { data: analytics } = useGetSubscriptionAnalytics();
+  const { data: recentSubsData, isLoading: subsLoading } = useListSubscriptions({ page: 1, pageSize: 5 });
+  const { data: customersData } = useListCustomers({ page: 1, pageSize: 1 });
+  const recentSubs = recentSubsData?.items ?? [];
 
-  const filtered = subscriptions.filter((s) => {
-    const matchSearch =
-      !search ||
-      s.customer.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.toLowerCase().includes(search.toLowerCase());
-    const matchPlan = !planFilter || planFilter === "all" || s.plan === planFilter;
-    return matchSearch && matchPlan;
-  });
+  const CURRENCY_SYMBOL: Record<string, string> = { NGN: "₦", USD: "$", GBP: "£" };
+  const formattedBalance = balance
+    ? `${CURRENCY_SYMBOL[balance.currency] ?? balance.currency}${balance.availableBalance.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : "—";
+  const balanceUpdated = balance
+    ? `Updated ${new Date(balance.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+    : "No data yet";
 
   const activeKeys = apiKeys?.filter((k) => k.status === "ACTIVE") ?? [];
   const revokedKeys = apiKeys?.filter((k) => k.status === "REVOKED") ?? [];
@@ -149,69 +172,67 @@ export default function DashboardPage() {
       </Container>
 
       <Container className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard
-          label="Monthly Revenue"
-          value="—"
-          sub="No data yet"
-          icon={<WalletIcon size={16} className="text-brand-text-icons" />}
-          accent
-        />
+        <Container className="flex flex-col gap-1">
+          <StatCard
+            label="Available Balance"
+            value={formattedBalance}
+            sub={balanceUpdated}
+            icon={<WalletIcon size={16} className="text-white" />}
+            accent
+            loading={balanceLoading}
+            action={{ label: "Withdraw", onClick: () => setShowWithdraw(true) }}
+          />
+          <button
+            onClick={() => router.push("/withdrawals")}
+            className="flex items-center gap-1 self-end pr-1 text-secondary hover:text-primary transition-colors cursor-pointer"
+          >
+            <Text variant="bodyXSmall" className="!text-[inherit] text-[11px]">Withdrawal history</Text>
+            <ChevronRightIcon size={11} />
+          </button>
+        </Container>
         <StatCard
           label="Active Subscriptions"
-          value="—"
-          sub="No data yet"
+          value={analytics ? String(analytics.subscriptionsByStatus.ACTIVE) : "—"}
+          sub={analytics ? `${analytics.totalSubscriptions} total` : "Loading…"}
           icon={<ScrollIcon size={16} className="text-secondary" />}
         />
         <StatCard
-          label="Total Customers"
-          value="—"
-          sub="No data yet"
-          icon={<UserIcon size={16} className="text-secondary" />}
+          label="Past Due"
+          value={analytics ? String(analytics.subscriptionsByStatus.PAST_DUE) : "—"}
+          sub={analytics ? `${analytics.subscriptionsByStatus.CANCELLED} cancelled` : "Loading…"}
+          icon={<WarningIcon size={16} className="text-secondary" />}
         />
         <StatCard
-          label="Plans Available"
-          value="—"
-          sub="No data yet"
-          icon={<LegalIcon size={16} className="text-secondary" />}
+          label="Total Customers"
+          value={customersData?.metadata ? String(customersData.metadata.totalRecordCount) : "—"}
+          sub={customersData?.metadata ? "Registered customers" : "Loading…"}
+          icon={<UserIcon size={16} className="text-secondary" />}
         />
       </Container>
+
+      {showWithdraw && <WithdrawModal onClose={() => setShowWithdraw(false)} />}
 
       <Container className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-6">
         {/* Subscriptions table */}
         <Container className="bg-surface border border-border rounded-2xl overflow-hidden">
-          <Container className="px-4 sm:px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+          <Container className="px-4 sm:px-6 py-4 border-b border-border flex items-center justify-between">
             <Text variant="h5" className="text-primary font-semibold">
               Recent subscriptions
             </Text>
-            <Container className="flex items-center gap-2 w-full sm:w-auto">
-              <Container className="flex-1 sm:w-48">
-                <Input
-                  placeholder="Search customer…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </Container>
-              <Container className="flex-1 sm:w-36">
-                <Select
-                  value={planFilter}
-                  onChange={setPlanFilter}
-                  placeholder="All plans"
-                  options={[
-                    { value: "all", label: "All plans" },
-                    { value: "Starter", label: "Starter" },
-                    { value: "Growth", label: "Growth" },
-                    { value: "Enterprise", label: "Enterprise" },
-                  ]}
-                />
-              </Container>
-            </Container>
+            <button
+              onClick={() => router.push("/subscriptions")}
+              className="flex items-center gap-1 text-brand-text-icons hover:underline cursor-pointer"
+            >
+              <Text variant="bodyXSmall" className="!text-[inherit] font-medium">View all</Text>
+              <ChevronRightIcon size={13} />
+            </button>
           </Container>
 
           <Container className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  {["Customer", "Plan", "Amount", "Cycle", "Status", "Date", ""].map((h) => (
+                  {["Customer", "Amount", "Billing", "Status", "Period ends"].map((h) => (
                     <th key={h} className="px-5 py-3 text-left">
                       <Text variant="bodyXSmall" className="text-secondary uppercase tracking-wider font-medium">
                         {h}
@@ -221,51 +242,60 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((row) => (
-                  <tr key={row.id} className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
-                    <td className="px-5 py-4">
-                      <Text variant="bodySmall" className="text-primary font-medium">{row.customer}</Text>
-                      <Text variant="bodyXSmall" className="text-secondary">{row.email}</Text>
-                    </td>
-                    <td className="px-5 py-4">
-                      <Container className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-bg-light border border-brand-border">
-                        <Text variant="bodyXSmall" className="text-brand-text-icons font-medium">{row.plan}</Text>
-                      </Container>
-                    </td>
-                    <td className="px-5 py-4">
-                      <Text variant="bodySmall" className="text-primary font-semibold tabular-nums">{row.amount}</Text>
-                    </td>
-                    <td className="px-5 py-4">
-                      <Text variant="bodyXSmall" className="text-secondary">{row.cycle}</Text>
-                    </td>
-                    <td className="px-5 py-4">
-                      <StatusBadge status={row.status} />
-                    </td>
-                    <td className="px-5 py-4">
-                      <Text variant="bodyXSmall" className="text-secondary">{row.date}</Text>
-                    </td>
-                    <td className="px-5 py-4">
-                      <Container className="flex items-center gap-1.5 text-secondary">
-                        <CopyIcon size={14} />
-                        <Text variant="bodyXSmall" className="!text-[inherit]">{row.id}</Text>
-                      </Container>
-                    </td>
-                  </tr>
-                ))}
-                {filtered.length === 0 && (
+                {subsLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={i} className="border-b border-border last:border-0 animate-pulse">
+                      {[120, 80, 90, 80, 90].map((w, j) => (
+                        <td key={j} className="px-5 py-4">
+                          <Container className="h-3 rounded-full bg-muted" style={{ width: w }} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : recentSubs.length === 0 ? (
                   <tr>
-                    <td colSpan={7}>
+                    <td colSpan={5}>
                       <EmptyState
                         icon={<ScrollIcon size={22} className="text-secondary" />}
-                        title="No subscriptions found"
-                        description={
-                          search || planFilter
-                            ? "No subscriptions match your current filters. Try adjusting your search."
-                            : "You don't have any active subscriptions yet. They'll appear here once customers subscribe to your plans."
-                        }
+                        title="No subscriptions yet"
+                        description="They'll appear here once customers subscribe to your plans."
                       />
                     </td>
                   </tr>
+                ) : (
+                  recentSubs.map((sub) => (
+                    <tr
+                      key={sub.id}
+                      className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => router.push("/subscriptions")}
+                    >
+                      <td className="px-5 py-4">
+                        <Text variant="bodyXSmall" className="text-secondary font-mono">
+                          {sub.customerId.slice(0, 8)}…
+                        </Text>
+                      </td>
+                      <td className="px-5 py-4">
+                        <Text variant="bodySmall" className="text-primary font-semibold tabular-nums">
+                          {`${sub.currency === "NGN" ? "₦" : sub.currency}${sub.amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        </Text>
+                      </td>
+                      <td className="px-5 py-4">
+                        <Text variant="bodyXSmall" className="text-secondary capitalize">
+                          {sub.billingInterval.charAt(0) + sub.billingInterval.slice(1).toLowerCase()}
+                        </Text>
+                      </td>
+                      <td className="px-5 py-4">
+                        <StatusBadge status={sub.status as SubStatus} />
+                      </td>
+                      <td className="px-5 py-4">
+                        <Text variant="bodyXSmall" className="text-secondary">
+                          {new Date(sub.currentPeriodEnd).toLocaleDateString("en-GB", {
+                            day: "numeric", month: "short", year: "numeric",
+                          })}
+                        </Text>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
