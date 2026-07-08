@@ -5,20 +5,25 @@ import { Button, Container, Text } from "@subgrid/ui";
 import {
   CheckIcon,
   CloseIcon,
+  CopyIcon,
   DangerIcon,
+  DrawerOutIcon,
   InactiveIcon,
   PendingIcon,
   ScrollIcon,
   SuccessIcon,
+  ThemeIcon,
   WarningIcon,
 } from "@subgrid/ui/icons";
 import { EmptyState } from "@/shared/ui/empty-state";
 import {
+  useCreateManagementLink,
+  useCreatePaymentRescueLink,
   useGetSubscription,
   useGetSubscriptionAnalytics,
   useListSubscriptions,
 } from "../hooks/subscription.hooks";
-import { Subscription, SubscriptionStatus } from "../types/subscription.type";
+import { ManagementLinkData, PaymentRescueLinkData, Subscription, SubscriptionStatus } from "../types/subscription.type";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const CURRENCY_SYMBOL: Record<string, string> = { NGN: "₦", USD: "$", GBP: "£" };
@@ -321,10 +326,259 @@ const SubscriptionDetailModal = ({ id, onClose }: { id: string; onClose: () => v
   );
 };
 
+// ── Payment rescue link modal ─────────────────────────────────────────────────
+const RescueLinkModal = ({
+  subscriptionId,
+  onClose,
+}: {
+  subscriptionId: string;
+  onClose: () => void;
+}) => {
+  const [link, setLink] = useState<PaymentRescueLinkData | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+
+  const { mutate: generate, isPending } = useCreatePaymentRescueLink(
+    (data) => setLink(data),
+    (msg) => setError(msg),
+  );
+
+  const handleCopy = () => {
+    if (!link) return;
+    navigator.clipboard.writeText(link.rescueUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <Container className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+        <Container>
+          <Text variant="h5" className="text-primary font-semibold">Payment rescue link</Text>
+          <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+            Share this link with the customer to recover a failed payment.
+          </Text>
+        </Container>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-border transition-colors shrink-0"
+        >
+          <CloseIcon size={14} className="text-secondary" />
+        </button>
+      </Container>
+
+      <Container className="px-6 py-6 flex flex-col gap-5">
+        {/* Subscription ref */}
+        <Container className="flex items-center gap-2 px-3 py-2.5 bg-muted rounded-xl border border-border">
+          <DrawerOutIcon size={13} className="text-secondary shrink-0" />
+          <Text variant="bodyXSmall" className="text-secondary">
+            Subscription <span className="font-mono text-primary">{subscriptionId.slice(0, 16)}…</span>
+          </Text>
+        </Container>
+
+        {!link ? (
+          <>
+            <Text variant="bodyXSmall" className="text-secondary">
+              Clicking "Generate" will create a secure, time-limited link. Once generated,
+              copy it and send it to the customer however you prefer — email, SMS, WhatsApp, etc.
+            </Text>
+            {error && (
+              <Container className="flex items-center gap-2 px-3 py-2.5 bg-danger-bg-light border border-danger-border rounded-xl">
+                <DangerIcon size={13} className="text-danger-text-icons shrink-0" />
+                <Text variant="bodyXSmall" className="text-danger-text-icons">{error}</Text>
+              </Container>
+            )}
+            <Button
+              variant="primary"
+              leftIcon={isPending ? <PendingIcon size={14} className="animate-spin" /> : <DrawerOutIcon size={14} />}
+              disabled={isPending}
+              onClick={() => generate()}
+            >
+              {isPending ? "Generating…" : "Generate link"}
+            </Button>
+          </>
+        ) : (
+          <>
+            {/* Generated URL */}
+            <Container className="flex flex-col gap-2">
+              <Text variant="bodyXSmall" className="text-secondary font-medium">Rescue URL</Text>
+              <Container className="flex items-center gap-2 px-3 py-2.5 bg-muted border border-border rounded-xl">
+                <Text
+                  variant="bodyXSmall"
+                  className="text-primary font-mono truncate flex-1 text-[11px]"
+                  title={link.rescueUrl}
+                >
+                  {link.rescueUrl}
+                </Text>
+                <button
+                  onClick={handleCopy}
+                  className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    copied
+                      ? "bg-success-bg-light text-success-text-icons"
+                      : "bg-brand-bg-light text-brand-text-icons hover:bg-brand-border"
+                  }`}
+                >
+                  {copied ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </Container>
+            </Container>
+
+            {/* Expiry */}
+            <Container className="flex items-center gap-2 px-3 py-2.5 bg-warning-bg-light border border-warning-border rounded-xl">
+              <WarningIcon size={13} className="text-warning-text-icons shrink-0" />
+              <Text variant="bodyXSmall" className="text-warning-text-icons">
+                Expires{" "}
+                {new Date(link.expiresAt).toLocaleString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </Container>
+          </>
+        )}
+      </Container>
+
+      <Container className="px-6 py-4 border-t border-border flex justify-end">
+        <Button variant="neutral" onClick={onClose}>Close</Button>
+      </Container>
+    </Modal>
+  );
+};
+
+// ── Management link modal ─────────────────────────────────────────────────────
+const ManagementLinkModal = ({
+  subscriptionId,
+  onClose,
+}: {
+  subscriptionId: string;
+  onClose: () => void;
+}) => {
+  const [link, setLink] = useState<ManagementLinkData | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+
+  const { mutate: generate, isPending } = useCreateManagementLink(
+    subscriptionId,
+    (data) => setLink(data),
+    (msg) => setError(msg),
+  );
+
+  const handleCopy = () => {
+    if (!link) return;
+    navigator.clipboard.writeText(link.portalUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <Container className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+        <Container>
+          <Text variant="h5" className="text-primary font-semibold">Customer management portal</Text>
+          <Text variant="bodyXSmall" className="text-secondary mt-0.5">
+            Share this link so the customer can manage their subscription.
+          </Text>
+        </Container>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-border transition-colors shrink-0"
+        >
+          <CloseIcon size={14} className="text-secondary" />
+        </button>
+      </Container>
+
+      <Container className="px-6 py-6 flex flex-col gap-5">
+        {/* Subscription ref */}
+        <Container className="flex items-center gap-2 px-3 py-2.5 bg-muted rounded-xl border border-border">
+          <ThemeIcon size={13} className="text-secondary shrink-0" />
+          <Text variant="bodyXSmall" className="text-secondary">
+            Subscription <span className="font-mono text-primary">{subscriptionId.slice(0, 16)}…</span>
+          </Text>
+        </Container>
+
+        {!link ? (
+          <>
+            <Text variant="bodyXSmall" className="text-secondary">
+              The customer will be able to view their subscription details, update their payment
+              method, and manage billing preferences through this secure link.
+            </Text>
+            {error && (
+              <Container className="flex items-center gap-2 px-3 py-2.5 bg-danger-bg-light border border-danger-border rounded-xl">
+                <DangerIcon size={13} className="text-danger-text-icons shrink-0" />
+                <Text variant="bodyXSmall" className="text-danger-text-icons">{error}</Text>
+              </Container>
+            )}
+            <Button
+              variant="primary"
+              leftIcon={isPending ? <PendingIcon size={14} className="animate-spin" /> : <ThemeIcon size={14} />}
+              disabled={isPending}
+              onClick={() => generate()}
+            >
+              {isPending ? "Generating…" : "Generate portal link"}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Container className="flex flex-col gap-2">
+              <Text variant="bodyXSmall" className="text-secondary font-medium">Portal URL</Text>
+              <Container className="flex items-center gap-2 px-3 py-2.5 bg-muted border border-border rounded-xl">
+                <Text
+                  variant="bodyXSmall"
+                  className="text-primary font-mono truncate flex-1 text-[11px]"
+                  title={link.portalUrl}
+                >
+                  {link.portalUrl}
+                </Text>
+                <button
+                  onClick={handleCopy}
+                  className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    copied
+                      ? "bg-success-bg-light text-success-text-icons"
+                      : "bg-brand-bg-light text-brand-text-icons hover:bg-brand-border"
+                  }`}
+                >
+                  {copied ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </Container>
+            </Container>
+
+            <Container className="flex items-center gap-2 px-3 py-2.5 bg-warning-bg-light border border-warning-border rounded-xl">
+              <WarningIcon size={13} className="text-warning-text-icons shrink-0" />
+              <Text variant="bodyXSmall" className="text-warning-text-icons">
+                Expires{" "}
+                {new Date(link.expiresAt).toLocaleString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </Container>
+          </>
+        )}
+      </Container>
+
+      <Container className="px-6 py-4 border-t border-border flex justify-end">
+        <Button variant="neutral" onClick={onClose}>Close</Button>
+      </Container>
+    </Modal>
+  );
+};
+
 // ── Skeleton row ──────────────────────────────────────────────────────────────
 const SkeletonRow = () => (
   <tr className="border-b border-border last:border-0 animate-pulse">
-    {[100, 80, 80, 100, 90, 100].map((w, i) => (
+    {[100, 80, 80, 100, 90, 100, 80].map((w, i) => (
       <td key={i} className="px-5 py-4">
         <Container className="h-3 rounded-full bg-muted" style={{ width: w }} />
       </td>
@@ -336,9 +590,13 @@ const SkeletonRow = () => (
 const SubscriptionRow = ({
   sub,
   onClick,
+  onRescue,
+  onManage,
 }: {
   sub: Subscription;
   onClick: () => void;
+  onRescue: () => void;
+  onManage: () => void;
 }) => (
   <tr
     className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors cursor-pointer"
@@ -365,6 +623,26 @@ const SubscriptionRow = ({
     </td>
     <td className="px-5 py-4">
       <Text variant="bodyXSmall" className="text-secondary">{fmtDate(sub.currentPeriodEnd)}</Text>
+    </td>
+    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+      <Container className="flex items-center gap-2">
+        <button
+          onClick={onRescue}
+          title="Generate payment rescue link"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted border border-border text-secondary hover:border-brand-border hover:bg-brand-bg-light hover:text-brand-text-icons transition-colors text-xs font-medium cursor-pointer whitespace-nowrap"
+        >
+          <DrawerOutIcon size={12} />
+          Rescue
+        </button>
+        <button
+          onClick={onManage}
+          title="Generate customer management portal link"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted border border-border text-secondary hover:border-brand-border hover:bg-brand-bg-light hover:text-brand-text-icons transition-colors text-xs font-medium cursor-pointer whitespace-nowrap"
+        >
+          <ThemeIcon size={12} />
+          Manage
+        </button>
+      </Container>
     </td>
   </tr>
 );
@@ -413,6 +691,8 @@ export const SubscriptionsScreen = () => {
   const [statusFilter, setStatusFilter] = useState<SubscriptionStatus | "ALL">("ALL");
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [rescueSubId, setRescueSubId] = useState<string | null>(null);
+  const [manageSubId, setManageSubId] = useState<string | null>(null);
 
   const { data, isLoading } = useListSubscriptions({
     ...(statusFilter !== "ALL" && { status: statusFilter }),
@@ -467,7 +747,7 @@ export const SubscriptionsScreen = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                {["Customer", "Plan", "Amount", "Billing", "Status", "Period ends"].map((h) => (
+                {["Customer", "Plan", "Amount", "Billing", "Status", "Period ends", ""].map((h) => (
                   <th key={h} className="px-5 py-3 text-left">
                     <Text
                       variant="bodyXSmall"
@@ -484,7 +764,7 @@ export const SubscriptionsScreen = () => {
                 Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
               ) : subscriptions.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <EmptyState
                       icon={<ScrollIcon size={22} className="text-secondary" />}
                       title="No subscriptions found"
@@ -502,6 +782,8 @@ export const SubscriptionsScreen = () => {
                     key={sub.id}
                     sub={sub}
                     onClick={() => setSelectedId(sub.id)}
+                    onRescue={() => setRescueSubId(sub.id)}
+                    onManage={() => setManageSubId(sub.id)}
                   />
                 ))
               )}
@@ -523,6 +805,12 @@ export const SubscriptionsScreen = () => {
 
       {selectedId && (
         <SubscriptionDetailModal id={selectedId} onClose={() => setSelectedId(null)} />
+      )}
+      {rescueSubId && (
+        <RescueLinkModal subscriptionId={rescueSubId} onClose={() => setRescueSubId(null)} />
+      )}
+      {manageSubId && (
+        <ManagementLinkModal subscriptionId={manageSubId} onClose={() => setManageSubId(null)} />
       )}
     </Container>
   );

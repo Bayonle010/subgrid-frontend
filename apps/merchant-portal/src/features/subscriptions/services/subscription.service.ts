@@ -4,6 +4,10 @@ import {
   GetSubscriptionResponse,
   ListSubscriptionsParams,
   ListSubscriptionsResponse,
+  ManagementLinkPayload,
+  ManagementLinkResponse,
+  PaymentRescueLinkPayload,
+  PaymentRescueLinkResponse,
 } from "../types/subscription.type";
 
 export const listSubscriptions = async (
@@ -20,5 +24,19 @@ export const getSubscription = async (id: string): Promise<GetSubscriptionRespon
 
 export const getSubscriptionAnalytics = async (): Promise<GetSubscriptionAnalyticsResponse> => {
   const result = await apiClient.get("/subscriptions/analytics");
+  return result.data;
+};
+
+export const createPaymentRescueLink = async (
+  payload: PaymentRescueLinkPayload,
+): Promise<PaymentRescueLinkResponse> => {
+  const result = await apiClient.post("/customer-portal/payment-rescue-links", payload);
+  return result.data;
+};
+
+export const createManagementLink = async (
+  payload: ManagementLinkPayload,
+): Promise<ManagementLinkResponse> => {
+  const result = await apiClient.post("/customer-portal/management-links", payload);
   return result.data;
 };

@@ -63,3 +63,31 @@ export interface SubscriptionApiResponse<T> {
 export type ListSubscriptionsResponse = SubscriptionApiResponse<Subscription[]>;
 export type GetSubscriptionResponse = SubscriptionApiResponse<Subscription>;
 export type GetSubscriptionAnalyticsResponse = SubscriptionApiResponse<SubscriptionAnalytics>;
+
+export interface ManagementLinkPayload {
+  subscriptionId: string;
+}
+
+export interface ManagementLinkData {
+  portalSessionId: string;
+  customerId: string;
+  subscriptionId: string;
+  portalUrl: string;
+  expiresAt: string;
+}
+
+export type ManagementLinkResponse = SubscriptionApiResponse<ManagementLinkData>;
+
+export interface PaymentRescueLinkPayload {
+  invoiceId: string;
+}
+
+export interface PaymentRescueLinkData {
+  portalSessionId: string;
+  invoiceId: string;
+  subscriptionId: string;
+  rescueUrl: string;
+  expiresAt: string;
+}
+
+export type PaymentRescueLinkResponse = SubscriptionApiResponse<PaymentRescueLinkData>;
