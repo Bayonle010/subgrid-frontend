@@ -42,7 +42,7 @@ export const useGetSubscription = (id: string) => {
 };
 
 // Hardcoded until per-subscription invoiceId is available from the API
-const RESCUE_INVOICE_ID = "d6ca24df-de79-47da-8671-818f1cb4db6e";
+const RESCUE_INVOICE_ID = "361a4dca-f14f-4961-acac-c4dea480d987";
 
 export const useCreatePaymentRescueLink = (
   onSuccess?: (data: PaymentRescueLinkData) => void,
